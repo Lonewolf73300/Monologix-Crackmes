@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07140f" />
+  <title>HydroPilot Live — Assistant pêche Grand'Maison</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <style>
+    :root{--bg:#06120d;--panel:#0e2018;--panel2:#132a20;--line:#254c3b;--txt:#effff5;--mut:#a8c9b5;--acc:#61f6a8;--warn:#ffd166;--bad:#ff6b6b;--ok:#7cff9a;--blue:#86c5ff}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#153525,#06120d 38%,#030806);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}button,select,input,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:16px;background:linear-gradient(135deg,#2df38f,#0aa85b);color:#04100b;font-weight:900;padding:12px 14px;box-shadow:0 10px 24px #0007}button.secondary{background:#193328;color:var(--txt);border:1px solid var(--line);box-shadow:none}button.danger{background:linear-gradient(135deg,#ff8e66,#ff4d5d);color:#180303}.wrap{max-width:1240px;margin:auto;padding:18px}.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:stretch}.card{background:linear-gradient(180deg,#122a20e8,#07130ee8);border:1px solid #28553f;border-radius:28px;padding:18px;box-shadow:0 20px 60px #0007;backdrop-filter:blur(8px)}h1{font-size:clamp(30px,5vw,58px);line-height:.92;margin:0 0 10px;letter-spacing:-2px}.sub{color:var(--mut);line-height:1.45}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.metric{background:#0b1b14;border:1px solid #224936;border-radius:20px;padding:13px}.metric b{display:block;font-size:25px;margin-top:5px}.metric span{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.08em}.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid #315f49;background:#10271d;border-radius:999px;padding:7px 10px;color:var(--mut);font-size:13px}.score{font-size:74px;line-height:.85;font-weight:1000;letter-spacing:-5px}.verdict{font-size:18px;font-weight:900}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{padding:9px 11px;border-radius:999px;background:#0b1b14;border:1px solid #254c3b;color:var(--mut);font-weight:800}.tab.active{background:var(--acc);color:#06120d}.layout{display:grid;grid-template-columns:.95fr 1.05fr;gap:14px;margin-top:14px}.panelTitle{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.panelTitle h2{margin:0;font-size:20px}#map{height:430px;border-radius:22px;overflow:hidden;border:1px solid #315f49;background:#07130e}.spotList{display:grid;gap:8px;max-height:430px;overflow:auto;padding-right:4px}.spot{border:1px solid #284f3d;border-radius:18px;padding:12px;background:#0a1a13;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}.spot.active{outline:2px solid var(--acc)}.badge{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-weight:1000;background:#173326}.badge.good{background:#0d4025;color:#8dffb0}.badge.mid{background:#41330d;color:#ffd166}.badge.bad{background:#4a1616;color:#ff8888}.small{font-size:12px;color:var(--mut)}.status{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.mode{display:none}.mode.active{display:block}.setupBox{border-left:4px solid var(--acc);padding:10px 12px;background:#0b1d15;border-radius:15px;margin:8px 0}.timeline{display:grid;gap:8px}.timeRow{display:grid;grid-template-columns:78px 1fr 60px;gap:10px;align-items:center;background:#0a1a13;border:1px solid #244936;border-radius:14px;padding:9px}.bar{height:9px;background:#173326;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#ff6b6b,#ffd166,#61f6a8);border-radius:99px}.lake{width:100%;height:300px;border-radius:24px;background:#081811;border:1px solid #29533f;overflow:hidden}.lake text{fill:#eafff1;font-size:12px;font-weight:800}.lake .water{fill:#0d3a47}.lake .zone{fill:#2df38f33;stroke:#61f6a8;stroke-width:2}.lake .risk{fill:#ff6b6b33;stroke:#ff6b6b;stroke-width:2}.lake .pin{cursor:pointer}.gear{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.gear div{background:#0a1a13;border:1px solid #244936;border-radius:16px;padding:10px}.log textarea{width:100%;min-height:90px;border-radius:16px;border:1px solid #315f49;background:#081911;color:var(--txt);padding:12px}.footer{color:var(--mut);font-size:12px;margin:18px 0}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#07130e;color:#effff5}.leaflet-container{font:inherit}
+    @media(max-width:920px){.hero,.layout{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.grid3,.grid2{grid-template-columns:1fr}.gear{grid-template-columns:repeat(2,1fr)}.wrap{padding:12px}#map{height:360px}.score{font-size:58px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="card">
+        <div class="pill">🎣 HydroPilot Live · Grand'Maison · zéro clé API</div>
+        <h1>Assistant pêche live</h1>
+        <p class="sub">Cockpit terrain : scan météo, carte, radar spots, setup automatique, alertes et plan d’action. Utilise Open-Meteo en live quand le réseau passe, sinon cache local / profil terrain.</p>
+        <div class="status" id="status"></div>
+        <div class="tabs">
+          <button class="tab active" data-mode="simple">Simple</button>
+          <button class="tab" data-mode="expert">Expert</button>
+          <button class="tab" data-mode="mission">Mission</button>
+          <button class="tab" data-mode="mapmode">Carte</button>
+        </div>
+        <div class="grid2">
+          <button id="scanBtn">Scanner maintenant</button>
+          <button class="secondary" id="geoBtn">Ma position</button>
+        </div>
+        <div class="grid2" style="margin-top:10px">
+          <select id="spotSelect"></select>
+          <select id="refreshSelect"><option value="0">Auto : off</option><option value="60000">Auto : 1 min</option><option value="300000" selected>Auto : 5 min</option><option value="900000">Auto : 15 min</option><option value="1800000">Auto : 30 min</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="panelTitle"><h2>Verdict immédiat</h2><span class="pill" id="riskPill">—</span></div>
+        <div class="score" id="score">--</div>
+        <div class="verdict" id="verdict">Scan en attente</div>
+        <p class="sub" id="brief">Lance un scan pour obtenir le meilleur spot et le setup.</p>
+        <div class="grid">
+          <div class="metric"><span>Vent</span><b id="mWind">--</b></div>
+          <div class="metric"><span>Rafales</span><b id="mGust">--</b></div>
+          <div class="metric"><span>Pression</span><b id="mPressure">--</b></div>
+          <div class="metric"><span>Pluie</span><b id="mRain">--</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card">
+        <div class="panelTitle"><h2>Radar spots</h2><span class="small">clic = analyse spot</span></div>
+        <div class="spotList" id="spotList"></div>
+      </div>
+      <div class="card">
+        <div class="panelTitle"><h2>Carte live</h2><span class="small">Leaflet / OSM</span></div>
+        <div id="map"></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card">
+        <div class="panelTitle"><h2>Plan d’eau tactique</h2><span class="small">offline</span></div>
+        <svg class="lake" viewBox="0 0 700 360" role="img" aria-label="Plan tactique Grand'Maison">
+          <path class="water" d="M90,190 C90,70 210,35 330,65 C440,92 488,42 595,86 C665,116 652,244 554,268 C440,296 385,332 262,300 C158,272 90,265 90,190Z"/>
+          <path class="zone" d="M105 195 C130 130 184 98 250 95 C224 139 205 178 205 228 C164 226 130 216 105 195Z"/>
+          <path class="risk" d="M500 92 C580 85 630 122 640 184 C598 172 555 165 507 176 C523 145 523 116 500 92Z"/>
+          <path class="zone" d="M325 82 C390 100 425 112 470 98 C450 135 433 165 414 205 C370 178 340 145 325 82Z"/>
+          <path class="zone" d="M278 292 C365 310 421 287 507 260 C493 295 445 327 370 335 C324 335 289 318 278 292Z"/>
+          <text x="118" y="120">Ouest abrité</text><text x="500" y="75">Barrage / profond</text><text x="330" y="112">Cassure centre</text><text x="290" y="325">Route sud</text>
+          <g class="pin" onclick="selectSpot('ouest')"><circle cx="160" cy="178" r="10" fill="#61f6a8"/><text x="174" y="182">A</text></g>
+          <g class="pin" onclick="selectSpot('barrage')"><circle cx="573" cy="150" r="10" fill="#ff6b6b"/><text x="587" y="154">B</text></g>
+          <g class="pin" onclick="selectSpot('centre')"><circle cx="385" cy="152" r="10" fill="#ffd166"/><text x="399" y="156">C</text></g>
+          <g class="pin" onclick="selectSpot('crique')"><circle cx="468" cy="101" r="10" fill="#86c5ff"/><text x="482" y="105">D</text></g>
+          <g class="pin" onclick="selectSpot('route')"><circle cx="385" cy="292" r="10" fill="#61f6a8"/><text x="399" y="296">E</text></g>
+        </svg>
+      </div>
+      <div class="card">
+        <div id="simple" class="mode active">
+          <div class="panelTitle"><h2>Plan simple</h2><span class="pill">action terrain</span></div>
+          <div id="simplePlan"></div>
+        </div>
+        <div id="expert" class="mode">
+          <div class="panelTitle"><h2>Mode expert</h2><span class="pill">indicateurs</span></div>
+          <div class="grid3" id="expertGrid"></div>
+          <h3>Fenêtres 24 h</h3><div class="timeline" id="timeline"></div>
+        </div>
+        <div id="mission" class="mode">
+          <div class="panelTitle"><h2>Ordre de mission</h2><button class="secondary" id="speakBtn">Lire</button></div>
+          <pre id="missionText" style="white-space:pre-wrap;background:#07130e;border:1px solid #254c3b;border-radius:18px;padding:14px;color:#effff5"></pre>
+        </div>
+        <div id="mapmode" class="mode">
+          <div class="panelTitle"><h2>Liens terrain</h2><span class="pill">GPS</span></div>
+          <div id="links"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card log">
+        <div class="panelTitle"><h2>Carnet intelligent</h2><button class="secondary" id="saveLog">Sauver</button></div>
+        <textarea id="logText" placeholder="Ex : 2 touches à 7h40, cuillère argent 7g, vent faible, eau claire, poste ouest..."></textarea>
+        <p class="small" id="logInfo">Les notes restent sur ton appareil.</p>
+      </div>
+      <div class="card">
+        <div class="panelTitle"><h2>Galerie matos / setup</h2><span class="small">réglage auto</span></div>
+        <div class="gear" id="gear"></div>
+      </div>
+    </section>
+
+    <p class="footer">HydroPilot Live. Données météo via Open-Meteo. Carte via Leaflet/OpenStreetMap. Vérifie toujours météo, accès, sécurité barrage et réglementation locale avant de pêcher.</p>
+  </main>
+
+<script>
+const spots=[
+ {id:'barrage',name:'Barrage / profond',lat:45.2027,lon:6.1212,profile:'profond, cassure, vent exposé',windShelter:0.2,depth:'8-25 m',tactic:'Distance / fond / cuillère lourde'},
+ {id:'centre',name:'Pointe centre / cassure',lat:45.2050,lon:6.1244,profile:'transition, cassure, prospection',windShelter:0.45,depth:'4-15 m',tactic:'Power search puis finesse'},
+ {id:'ouest',name:'Berge ouest abritée',lat:45.2047,lon:6.1146,profile:'abri vent, bordure, eau claire',windShelter:0.85,depth:'1-8 m',tactic:'Ultra finesse / naturel'},
+ {id:'crique',name:'Crique nord / arrivée d’eau',lat:45.2111,lon:6.1260,profile:'arrivée d’eau, oxygène, nourriture',windShelter:0.6,depth:'1-10 m',tactic:'Petit leurre souple / vairon manié'},
+ {id:'bras',name:'Bras amont / queue de lac',lat:45.2150,lon:6.1335,profile:'queue, hauts-fonds, poissons actifs',windShelter:0.5,depth:'0.5-6 m',tactic:'Prospection rapide matin/soir'},
+ {id:'route',name:'Rive route sud / repli',lat:45.1995,lon:6.1182,profile:'accès rapide, repli météo',windShelter:0.7,depth:'2-12 m',tactic:'Plan B sécurité'}
+];
+const $=id=>document.getElementById(id);let map,markers={},current=spots[0],last=null,timer=null,userPos=null;
+function fmt(n,u=''){return n==null||Number.isNaN(n)?'--':(Math.round(n*10)/10)+u}
+function statusPill(txt,cls=''){return `<span class="pill">${txt}</span>`}
+function init(){spots.forEach(s=>{let o=document.createElement('option');o.value=s.id;o.textContent=s.name;$('spotSelect').appendChild(o)});$('spotSelect').onchange=e=>selectSpot(e.target.value);$('scanBtn').onclick=scan;$('geoBtn').onclick=geo;$('refreshSelect').onchange=schedule;document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setMode(t.dataset.mode));$('speakBtn').onclick=()=>speak($('missionText').textContent);$('saveLog').onclick=saveLog;renderSpots();initMap();restore();scan();schedule();}
+function setMode(m){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===m));document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x.id===m));if(map)setTimeout(()=>map.invalidateSize(),200)}
+function selectSpot(id){current=spots.find(s=>s.id===id)||spots[0];$('spotSelect').value=current.id;renderSpots();scan();}
+function initMap(){map=L.map('map').setView([45.205,6.122],13);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);spots.forEach(s=>{markers[s.id]=L.marker([s.lat,s.lon]).addTo(map).bindPopup(`<b>${s.name}</b><br>${s.profile}<br><button onclick="selectSpot('${s.id}')">Analyser</button>`)});}
+async function weather(s){const vars=['temperature_2m','apparent_temperature','relative_humidity_2m','dew_point_2m','precipitation','rain','precipitation_probability','pressure_msl','surface_pressure','cloud_cover','cloud_cover_low','cloud_cover_mid','cloud_cover_high','visibility','wind_speed_10m','wind_direction_10m','wind_gusts_10m','uv_index','cape','freezing_level_height'].join(',');const url=`https://api.open-meteo.com/v1/meteofrance?latitude=${s.lat}&longitude=${s.lon}&hourly=${vars}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=Europe%2FParis&forecast_days=4&wind_speed_unit=kmh`;try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('meteo '+r.status);const j=await r.json();localStorage.setItem('hydro:lastWeather:'+s.id,JSON.stringify({t:Date.now(),j}));return {src:'LIVE',j}}catch(e){const c=localStorage.getItem('hydro:lastWeather:'+s.id);if(c)return {src:'CACHE',j:JSON.parse(c).j};return {src:'OFFLINE',j:offlineWeather()}}}
+function offlineWeather(){const h=[...Array(72)].map((_,i)=>new Date(Date.now()+i*3600e3).toISOString());const day=new Date().getHours();return {hourly:{time:h,temperature_2m:h.map((_,i)=>8+Math.sin((day+i)/24*Math.PI*2)*5),apparent_temperature:h.map(()=>7),relative_humidity_2m:h.map(()=>70),dew_point_2m:h.map(()=>4),precipitation:h.map(()=>0),rain:h.map(()=>0),precipitation_probability:h.map(()=>20),pressure_msl:h.map((_,i)=>1017+Math.sin(i/8)),surface_pressure:h.map(()=>830),cloud_cover:h.map(()=>45),cloud_cover_low:h.map(()=>20),cloud_cover_mid:h.map(()=>30),cloud_cover_high:h.map(()=>40),visibility:h.map(()=>18000),wind_speed_10m:h.map(()=>10),wind_direction_10m:h.map(()=>230),wind_gusts_10m:h.map(()=>18),uv_index:h.map(()=>3),cape:h.map(()=>0),freezing_level_height:h.map(()=>2600)},current:{temperature_2m:8,apparent_temperature:7,precipitation:0,cloud_cover:45,pressure_msl:1017,wind_speed_10m:10,wind_direction_10m:230,wind_gusts_10m:18}}}
+function pickNow(j){const h=j.hourly||{},now=new Date(),times=h.time||[];let idx=0,best=1e15;times.forEach((t,i)=>{let d=Math.abs(new Date(t)-now);if(d<best){best=d;idx=i}});return idx}
+function val(j,k,i){return j.hourly?.[k]?.[i]??j.current?.[k]??null}
+function trend(arr,i,n){if(!arr||i<n)return 0;return (arr[i]??0)-(arr[i-n]??arr[i]??0)}
+function scoreAt(j,s,i){let wind=val(j,'wind_speed_10m',i)||0,gust=val(j,'wind_gusts_10m',i)||0,press=val(j,'pressure_msl',i)||1015,rain=val(j,'precipitation',i)||0,cloud=val(j,'cloud_cover',i)||0,uv=val(j,'uv_index',i)||0,cape=val(j,'cape',i)||0,temp=val(j,'temperature_2m',i)||8,vis=val(j,'visibility',i)||20000;let ph=trend(j.hourly?.pressure_msl,i,3);let hour=new Date(j.hourly?.time?.[i]||Date.now()).getHours();let sc=52; if(hour<10||hour>18)sc+=12; if(wind>=4&&wind<=16)sc+=10; if(gust>35)sc-=20; if(gust>50)sc-=30; if(s.windShelter>.7&&gust>25)sc+=8; if(Math.abs(ph)<1.5)sc+=8; if(ph<0&&ph>-4)sc+=7; if(Math.abs(ph)>6)sc-=18; if(cloud>35&&cloud<85)sc+=8; if(uv>6&&cloud<25)sc-=12; if(rain>0&&rain<1.5)sc+=5; if(rain>3)sc-=18; if(cape>500)sc-=25; if(vis<5000)sc-=10; if(temp<2)sc-=5; return Math.max(0,Math.min(100,Math.round(sc))) }
+function risk(j,i){let gust=val(j,'wind_gusts_10m',i)||0,rain=val(j,'precipitation',i)||0,cape=val(j,'cape',i)||0,vis=val(j,'visibility',i)||20000;if(cape>700||gust>55||rain>8||vis<2500)return ['ROUGE','danger'];if(cape>300||gust>40||rain>4||vis<6000)return ['ORANGE','danger'];if(gust>28||rain>1.5)return ['JAUNE','warn'];return ['VERT','ok']}
+function setup(j,s,i,sc){let wind=val(j,'wind_speed_10m',i)||0,gust=val(j,'wind_gusts_10m',i)||0,cloud=val(j,'cloud_cover',i)||0,uv=val(j,'uv_index',i)||0,temp=val(j,'temperature_2m',i)||8,rain=val(j,'precipitation',i)||0;let type='Ultra finesse';let canne='Spinning L/ML 2,10–2,40 m';let line='Tresse 8/100 ou nylon 18/100';let fluoro='Fluoro 16–18/100, 1,5–2 m';let lure='cuillère 3–7 g / petit LS 2"';let color=cloud>50?'argent, blanc, perle':'naturel, olive, transparent';let depth='bordure 1–5 m';let anim='lent, pauses longues, touches discrètes';if(gust>28||wind>18){type='Distance / vent';canne='Spinning M 2,40–2,70 m';line='Tresse 10–12/100';fluoro='Fluoro 20–24/100';lure='ondulante 10–18 g / bombette';color='argent, cuivre, chartreuse discret';depth='cassure 6–18 m';anim='lancers longs, contrôle bannière, récupération linéaire lente'}else if(temp<5||sc<55){type='Fond / activité basse';canne='Spinning ML/M';line='Tresse fine + fluoro';fluoro='18–22/100';lure='LS plombé 5–10 g / micro jig';color='sombre, naturel, perle';depth='fond et rupture 8–22 m';anim='gratter, pauses 5–10 s'}else if(uv>6&&cloud<30){type='Eau claire discrète';fluoro='14–16/100';lure='micro cuillère 2–5 g / nymphe bombette';color='transparent, vairon, brun';depth='ombre, arrivées d’eau, bordures profondes';anim='ultra lent, approche basse, peu de bruit'}if(rain>2){color='contraste léger, argent mat';anim='prospection bordure oxygénée puis cassure'}return {type,canne,line,fluoro,lure,color,depth,anim}}
+async function scan(){setBusy(true);let data=await weather(current);let j=data.j,i=pickNow(j);let scored=spots.map(s=>({s,score:scoreAt(j,s,i)})).sort((a,b)=>b.score-a.score);let best=scored[0];let sc=scoreAt(j,current,i);let rk=risk(j,i);let st=setup(j,current,i,sc);last={data,j,i,sc,rk,st,scored,spot:current,ts:Date.now()};localStorage.setItem('hydro:lastResult',JSON.stringify(last));render();setBusy(false)}
+function setBusy(b){$('scanBtn').textContent=b?'Scan en cours...':'Scanner maintenant'}
+function render(){if(!last)return;let {data,j,i,sc,rk,st,scored,spot}=last;$('status').innerHTML=statusPill(data.src==='LIVE'?'🟢 LIVE météo':data.src==='CACHE'?'🟡 CACHE local':'⚫ OFFLINE profil')+statusPill('Dernier scan '+new Date(last.ts).toLocaleTimeString('fr-FR'))+statusPill('Spot '+spot.name);$('score').textContent=sc;$('riskPill').textContent='Risque '+rk[0];$('riskPill').style.borderColor=rk[1]==='danger'?'#ff6b6b':rk[1]==='warn'?'#ffd166':'#61f6a8';$('verdict').textContent=sc>=75?'GO fort — pêche ciblée':sc>=60?'GO — propre':sc>=45?'Jouable — approche fine':'Dur — plan B ou repli';$('brief').textContent=`Meilleur radar : ${scored[0].s.name} (${scored[0].score}/100). Setup conseillé : ${st.type}.`;$('mWind').textContent=fmt(val(j,'wind_speed_10m',i),' km/h');$('mGust').textContent=fmt(val(j,'wind_gusts_10m',i),' km/h');$('mPressure').textContent=fmt(val(j,'pressure_msl',i),' hPa');$('mRain').textContent=fmt(val(j,'precipitation',i),' mm');renderSpots();renderPlan();renderExpert();renderMission();renderLinks();renderGear(st);updateMarkers(scored)}
+function renderSpots(){let html='';let scores=last?.scored||spots.map(s=>({s,score:'--'}));scores.forEach(o=>{let cls=o.score>=70?'good':o.score>=50?'mid':'bad';html+=`<div class="spot ${current.id===o.s.id?'active':''}" onclick="selectSpot('${o.s.id}')"><div class="badge ${cls}">${o.score}</div><div><b>${o.s.name}</b><div class="small">${o.s.profile}</div><div class="small">${o.s.depth} · ${o.s.tactic}</div></div><div>›</div></div>`});$('spotList').innerHTML=html}
+function renderPlan(){let {spot,st,sc}=last;$('simplePlan').innerHTML=`<div class="setupBox"><b>Spot</b><br>${spot.name}<br><span class="small">${spot.profile}</span></div><div class="setupBox"><b>Setup</b><br>${st.type} — ${st.lure}<br>${st.line} · ${st.fluoro}</div><div class="setupBox"><b>Animation</b><br>${st.anim}</div><div class="setupBox"><b>Plan A</b><br>Pêche ${spot.depth}, 20 minutes max par micro-zone. Si pas de suivi : change angle + profondeur.</div><div class="setupBox"><b>Plan B</b><br>Si rafales ou soleil fort : repli berge ouest / crique, bas de ligne plus fin, couleur naturelle.</div><div class="setupBox"><b>Plan C</b><br>Si score &lt; 50 : fond/cassure, animation lente, ou report sécurité.</div>`}
+function renderExpert(){let {j,i}=last;let keys=[['Temp',fmt(val(j,'temperature_2m',i),' °C')],['Ressenti',fmt(val(j,'apparent_temperature',i),' °C')],['Humidité',fmt(val(j,'relative_humidity_2m',i),' %')],['Point rosée',fmt(val(j,'dew_point_2m',i),' °C')],['Vent dir',fmt(val(j,'wind_direction_10m',i),' °')],['Nuages',fmt(val(j,'cloud_cover',i),' %')],['Nuages bas',fmt(val(j,'cloud_cover_low',i),' %')],['Visibilité',fmt((val(j,'visibility',i)||0)/1000,' km')],['UV',fmt(val(j,'uv_index',i),'')],['CAPE',fmt(val(j,'cape',i),' J/kg')],['Iso 0',fmt(val(j,'freezing_level_height',i),' m')],['Pression 3h',fmt(trend(j.hourly?.pressure_msl,i,3),' hPa')]];$('expertGrid').innerHTML=keys.map(k=>`<div class="metric"><span>${k[0]}</span><b>${k[1]}</b></div>`).join('');let rows='';for(let n=0;n<24;n+=2){let idx=i+n;if(!j.hourly?.time?.[idx])continue;let s=scoreAt(j,current,idx);let t=new Date(j.hourly.time[idx]).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});rows+=`<div class="timeRow"><b>${t}</b><div class="bar"><i style="width:${s}%"></i></div><b>${s}</b></div>`}$('timeline').innerHTML=rows}
+function renderMission(){let {spot,sc,rk,st,j,i}=last;$('missionText').textContent=`HYDROPILOT — ORDRE DE MISSION\n\nSpot : ${spot.name}\nScore : ${sc}/100\nRisque : ${rk[0]}\nVent : ${fmt(val(j,'wind_speed_10m',i),' km/h')} / Rafales ${fmt(val(j,'wind_gusts_10m',i),' km/h')}\nPression : ${fmt(val(j,'pressure_msl',i),' hPa')}\nPluie : ${fmt(val(j,'precipitation',i),' mm')}\n\nSETUP\n${st.type}\nCanne : ${st.canne}\nLigne : ${st.line}\nFluoro : ${st.fluoro}\nLeurre : ${st.lure}\nCouleur : ${st.color}\nProfondeur : ${st.depth}\nAnimation : ${st.anim}\n\nPLAN\nA : pêcher le poste choisi 20 min, varier angle et profondeur.\nB : repli berge abritée si rafales, pluie forte, visibilité basse.\nC : fond/cassure lent si activité faible.\n\nSÉCURITÉ\nVérifier accès, niveau du barrage, météo réelle, carte de pêche, horaires légaux.`}
+function renderLinks(){let s=current;$('links').innerHTML=`<div class="setupBox"><b>GPS spot</b><br><a style="color:#61f6a8" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}">Ouvrir Google Maps</a></div><div class="setupBox"><b>OpenStreetMap</b><br><a style="color:#61f6a8" target="_blank" href="https://www.openstreetmap.org/?mlat=${s.lat}&mlon=${s.lon}#map=15/${s.lat}/${s.lon}">Ouvrir OSM</a></div><div class="setupBox"><b>Windy</b><br><a style="color:#61f6a8" target="_blank" href="https://www.windy.com/${s.lat}/${s.lon}?${s.lat},${s.lon},11">Ouvrir Windy</a></div>`}
+function renderGear(st){$('gear').innerHTML=[['Canne',st.canne],['Ligne',st.line],['Bas ligne',st.fluoro],['Leurre',st.lure],['Couleur',st.color],['Profondeur',st.depth],['Animation',st.anim],['Rotation','12–20 min / poste']].map(x=>`<div><b>${x[0]}</b><br><span class="small">${x[1]}</span></div>`).join('')}
+function updateMarkers(scored){scored.forEach(o=>{let m=markers[o.s.id];if(m)m.setPopupContent(`<b>${o.s.name}</b><br>Score ${o.score}/100<br>${o.s.profile}<br><button onclick="selectSpot('${o.s.id}')">Analyser</button>`)});if(markers[current.id])markers[current.id].openPopup();}
+function geo(){if(!navigator.geolocation)return alert('Géolocalisation non disponible');navigator.geolocation.getCurrentPosition(p=>{userPos=[p.coords.latitude,p.coords.longitude];L.marker(userPos,{title:'Ma position'}).addTo(map).bindPopup('Ma position').openPopup();map.setView(userPos,13)},e=>alert('Position refusée ou indisponible'))}
+function schedule(){if(timer)clearInterval(timer);let ms=+$('refreshSelect').value;if(ms>0)timer=setInterval(scan,ms)}
+function speak(txt){if(!('speechSynthesis'in window))return alert('Synthèse vocale indisponible');speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(txt);u.lang='fr-FR';u.rate=.95;speechSynthesis.speak(u)}
+function saveLog(){let logs=JSON.parse(localStorage.getItem('hydro:logs')||'[]');logs.unshift({t:new Date().toISOString(),spot:current.name,score:last?.sc,note:$('logText').value});localStorage.setItem('hydro:logs',JSON.stringify(logs.slice(0,80)));$('logInfo').textContent='Sauvé : '+new Date().toLocaleString('fr-FR')}
+function restore(){let r=localStorage.getItem('hydro:lastResult');if(r){try{last=JSON.parse(r);render()}catch(e){}}}
+window.selectSpot=selectSpot;window.addEventListener('load',init);
+</script>
+</body>
+</html>
