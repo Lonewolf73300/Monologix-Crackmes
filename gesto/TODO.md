@@ -1,6 +1,6 @@
 # TODO (V1 verrouillée : 3 blocs)
 0. Test réel sur téléphone verrouillé (voir STATE.md) — BLOQUANT pour valider le rappel.
-1. Migration SQLite → Supabase (obligatoire avant mise en ligne).
+1. Créer le projet Supabase, renseigner DATABASE_URL, lancer `tests/run.sh` avec cette URL sur une base vide dédiée, puis déployer.
 2. Cron quotidien en ligne sur /api/rappels ; clé Resend pour le repli email.
 3. Icône PNG (iOS) pour l'installation écran d'accueil.
 

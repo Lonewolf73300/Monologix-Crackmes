@@ -7,8 +7,8 @@ import type { Emp } from "@/lib/documents";
 
 export default async function Page() {
   const u = await requirePatron();
-  const rows = db.prepare("SELECT id,enc,user_id FROM employees WHERE company_id=? ORDER BY id DESC").all(u.company_id) as { id: number; enc: string; user_id: number | null }[];
-  const co = db.prepare("SELECT invite_code,consigne,faq FROM companies WHERE id=?").get(u.company_id) as { invite_code: string; consigne: string; faq: string };
+  const rows = await db.prepare("SELECT id,enc,user_id FROM employees WHERE company_id=? ORDER BY id DESC").all(u.company_id) as { id: number; enc: string; user_id: number | null }[];
+  const co = await db.prepare("SELECT invite_code,consigne,faq FROM companies WHERE id=?").get(u.company_id) as { invite_code: string; consigne: string; faq: string };
   const faq = (JSON.parse(co.faq) as { q: string; a: string }[]).map((x) => `${x.q} | ${x.a}`).join("\n");
   return (
     <main className="mx-auto max-w-3xl px-5 pb-10">

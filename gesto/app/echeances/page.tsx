@@ -9,11 +9,11 @@ import { KIND_LABEL, type Emp, type Kind } from "@/lib/documents";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const u = await requirePatron();
-  const rows = db.prepare("SELECT id,title,due,remind_days,done FROM deadlines WHERE company_id=? ORDER BY done, due").all(u.company_id) as { id: number; title: string; due: string; remind_days: number; done: number }[];
+  const rows = await db.prepare("SELECT id,title,due,remind_days,done FROM deadlines WHERE company_id=? ORDER BY done, due").all(u.company_id) as { id: number; title: string; due: string; remind_days: number; done: number }[];
   const focusId = Number((await searchParams).id) || 0;
-  const focus = focusId ? db.prepare("SELECT id,title,due,employee_id FROM deadlines WHERE id=? AND company_id=?").get(focusId, u.company_id) as { id: number; title: string; due: string; employee_id: number | null } | undefined : undefined;
-  const emp = focus?.employee_id ? db.prepare("SELECT enc FROM employees WHERE id=? AND company_id=?").get(focus.employee_id, u.company_id) as { enc: string } | undefined : undefined;
-  const fdocs = focus?.employee_id ? db.prepare("SELECT id,kind,status,version FROM documents WHERE employee_id=? AND company_id=?").all(focus.employee_id, u.company_id) as { id: number; kind: Kind; status: string; version: number }[] : [];
+  const focus = focusId ? await db.prepare("SELECT id,title,due,employee_id FROM deadlines WHERE id=? AND company_id=?").get(focusId, u.company_id) as { id: number; title: string; due: string; employee_id: number | null } | undefined : undefined;
+  const emp = focus?.employee_id ? await db.prepare("SELECT enc FROM employees WHERE id=? AND company_id=?").get(focus.employee_id, u.company_id) as { enc: string } | undefined : undefined;
+  const fdocs = focus?.employee_id ? await db.prepare("SELECT id,kind,status,version FROM documents WHERE employee_id=? AND company_id=?").all(focus.employee_id, u.company_id) as { id: number; kind: Kind; status: string; version: number }[] : [];
   const today = new Date().toISOString().slice(0, 10);
   return (
     <main className="mx-auto max-w-3xl px-5 pb-10">

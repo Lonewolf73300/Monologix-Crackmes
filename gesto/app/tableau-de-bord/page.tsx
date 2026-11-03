@@ -6,11 +6,11 @@ import { suggestions } from "@/lib/rules";
 
 export default async function Page() {
   const u = await requirePatron();
-  const co = db.prepare("SELECT * FROM companies WHERE id=?").get(u.company_id) as { name: string; type: string; nb_sal: string; pains: string; invite_code: string };
-  const n = (sql: string) => (db.prepare(sql).get(u.company_id) as { n: number }).n;
-  const emps = n("SELECT COUNT(*) n FROM employees WHERE company_id=?");
-  const docs = n("SELECT COUNT(*) n FROM documents WHERE company_id=? AND status='a_relire'");
-  const dl = n("SELECT COUNT(*) n FROM deadlines WHERE company_id=? AND done=0");
+  const co = await db.prepare("SELECT * FROM companies WHERE id=?").get(u.company_id) as { name: string; type: string; nb_sal: string; pains: string; invite_code: string };
+  const n = async (sql: string) => ((await db.prepare(sql).get(u.company_id)) as { n: number }).n;
+  const emps = await n("SELECT COUNT(*) n FROM employees WHERE company_id=?");
+  const docs = await n("SELECT COUNT(*) n FROM documents WHERE company_id=? AND status='a_relire'");
+  const dl = await n("SELECT COUNT(*) n FROM deadlines WHERE company_id=? AND done=0");
   const tiles = [
     { href: "/salaries", t: "Mes employés", v: `${emps} salarié${emps > 1 ? "s" : ""}` },
     { href: "/documents", t: "Mes documents", v: docs ? `${docs} à relire` : "Aucun en attente" },

@@ -6,8 +6,8 @@ import { KIND_LABEL, MENTION, missingInfo, type Emp, type Kind } from "@/lib/doc
 type Row = { employee_id: number; id: number; kind: Kind; status: string; version: number; validated_at: string | null; enc: string };
 export default async function Page() {
   const u = await requirePatron();
-  const rows = db.prepare("SELECT d.employee_id,d.id,d.kind,d.status,d.version,d.validated_at,e.enc FROM documents d JOIN employees e ON e.id=d.employee_id WHERE d.company_id=? ORDER BY d.id DESC").all(u.company_id) as Row[];
-  const log = db.prepare("SELECT at,actor,action,version FROM journal WHERE company_id=? ORDER BY id DESC LIMIT 30").all(u.company_id) as { at: string; actor: string; action: string; version: number }[];
+  const rows = await db.prepare("SELECT d.employee_id,d.id,d.kind,d.status,d.version,d.validated_at,e.enc FROM documents d JOIN employees e ON e.id=d.employee_id WHERE d.company_id=? ORDER BY d.id DESC").all(u.company_id) as Row[];
+  const log = await db.prepare("SELECT at,actor,action,version FROM journal WHERE company_id=? ORDER BY id DESC LIMIT 30").all(u.company_id) as { at: string; actor: string; action: string; version: number }[];
   return (
     <main className="mx-auto max-w-3xl px-5 pb-10">
       <h1 className="text-3xl font-bold">Mes documents</h1>

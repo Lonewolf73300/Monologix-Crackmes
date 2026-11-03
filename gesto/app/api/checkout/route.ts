@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       line_items: [{ price, quantity: 1 }], allow_promotion_codes: true, customer_email: u.email,
       client_reference_id: `${u.id}:${offer}`, success_url: `${base}/tableau-de-bord?paiement=ok`, cancel_url: `${base}/offres`,
     });
-    db.prepare("INSERT INTO purchases(user_id,offer,status,stripe_id,created) VALUES(?,?,'en_attente',?,?)").run(u.id, offer, session.id, now());
+    await db.prepare("INSERT INTO purchases(user_id,offer,status,stripe_id,created) VALUES(?,?,'en_attente',?,?)").run(u.id, offer, session.id, now());
     return NextResponse.redirect(session.url!, 303);
   } catch (e) { logError("checkout", e); return new NextResponse("Erreur de paiement, réessaie.", { status: 502 }); }
 }

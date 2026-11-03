@@ -3,7 +3,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 
-const secret = () => process.env.GESTO_SESSION_SECRET || "dev-only-secret-change-me";
+const secret = () => {
+  const s = process.env.GESTO_SESSION_SECRET;
+  if (s) return s;
+  if (process.env.NODE_ENV === "production" && process.env.GESTO_ALLOW_DEV_KEY !== "1") throw new Error("GESTO_SESSION_SECRET manquant en production.");
+  return "dev-only-secret-change-me";
+};
 const sign = (v: string) => crypto.createHmac("sha256", secret()).update(v).digest("hex");
 
 export function hashPassword(pw: string): string {
@@ -30,7 +35,7 @@ export async function currentUser(): Promise<User | null> {
   const expected = sign(`${id}.${exp}`);
   if (!sig || sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
   if (Number(exp) < Date.now()) return null;
-  return (db.prepare("SELECT id,email,role,company_id FROM users WHERE id=?").get(Number(id)) as User) ?? null;
+  return (await db.prepare("SELECT id,email,role,company_id FROM users WHERE id=?").get(Number(id)) as User) ?? null;
 }
 export async function requirePatron(): Promise<User & { company_id: number }> {
   const u = await currentUser();

@@ -12,10 +12,10 @@ export default async function Page() {
   const u = await currentUser();
   if (!u) redirect("/connexion");
   if (u.role !== "salarie") redirect("/tableau-de-bord");
-  const emp = db.prepare("SELECT id,enc FROM employees WHERE user_id=?").get(u.id) as { id: number; enc: string };
+  const emp = await db.prepare("SELECT id,enc FROM employees WHERE user_id=?").get(u.id) as { id: number; enc: string };
   const e = decrypt<Emp>(emp.enc);
-  const co = db.prepare("SELECT name,consigne,faq FROM companies WHERE id=?").get(u.company_id) as { name: string; consigne: string; faq: string };
-  const last = db.prepare("SELECT kind,at FROM punches WHERE employee_id=? ORDER BY id DESC LIMIT 1").get(emp.id) as { kind: string; at: string } | undefined;
+  const co = await db.prepare("SELECT name,consigne,faq FROM companies WHERE id=?").get(u.company_id) as { name: string; consigne: string; faq: string };
+  const last = await db.prepare("SELECT kind,at FROM punches WHERE employee_id=? ORDER BY id DESC LIMIT 1").get(emp.id) as { kind: string; at: string } | undefined;
   const faq = JSON.parse(co.faq) as { q: string; a: string }[];
   const btn = "rounded-2xl px-4 py-6 text-xl font-semibold ";
   return (

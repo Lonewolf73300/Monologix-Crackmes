@@ -8,7 +8,7 @@ type Sub = { id: number; endpoint: string; p256dh: string; auth: string };
 // "envoye" = le service push a accepté le message (il le délivre ensuite à l'appareil, même verrouillé).
 export async function pushToCompany(companyId: number, payload: { title: string; body: string; url: string; tag: string }): Promise<"envoye" | "non_envoye" | "erreur"> {
   if (!pushConfigured()) return "non_envoye";
-  const subs = db.prepare("SELECT id,endpoint,p256dh,auth FROM push_subs WHERE company_id=?").all(companyId) as Sub[];
+  const subs = await db.prepare("SELECT id,endpoint,p256dh,auth FROM push_subs WHERE company_id=?").all(companyId) as Sub[];
   if (!subs.length) return "non_envoye";
   webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:contact@gesto.invalid", process.env.VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!);
   let ok = 0;
@@ -18,7 +18,7 @@ export async function pushToCompany(companyId: number, payload: { title: string;
       ok++;
     } catch (e) {
       const code = (e as { statusCode?: number }).statusCode;
-      if (code === 404 || code === 410) db.prepare("DELETE FROM push_subs WHERE id=?").run(s.id); // abonnement expiré
+      if (code === 404 || code === 410) await db.prepare("DELETE FROM push_subs WHERE id=?").run(s.id); // abonnement expiré
       else logError("push", e);
     }
   }

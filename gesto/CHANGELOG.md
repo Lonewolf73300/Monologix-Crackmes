@@ -7,3 +7,6 @@
 - Contrat : alerte et blocage sur infos manquantes, versionnage, revalidation.
 - Test e2e en une commande + redémarrage + persistance.
 - Verrou SQLite (busy_timeout).
+
+## 0.3.0
+- Migration SQLite → Postgres (Supabase), transactions, secrets obligatoires en production, tests sur Postgres jetable.

@@ -18,7 +18,7 @@ Test : `npm run build`, démarrer `next start -p 3100` avec `CRON_SECRET=testsec
 - Emails Resend : sans clé, le rappel est consigné « non_envoye ». NON testé avec Resend réel.
 
 ## Écarts avec le prompt (à décider)
-- Stockage : SQLite local (node:sqlite) au lieu de Supabase. Incompatible Vercel (disque éphémère) → migrer vers Postgres/Supabase avant déploiement.
+- Stockage : (résolu en 0.3.0) Stockage migré SQLite → Postgres (compatible Supabase).
 - Écrans V2 non construits (verrou 10 commerçants). Rails : `companies.modules`, `users.role`.
 
 ## CONSIGNE ABSOLUE (re-précisée par Lou) — statut honnête
@@ -44,3 +44,10 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 1. `npx web-push generate-vapid-keys` → VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY dans `.env.local`, + CRON_SECRET.
 2. Servir en HTTPS (obligatoire pour le push), ouvrir Gesto sur le téléphone, /echeances → « Activer les rappels sur cet appareil ».
 3. Créer une échéance du jour, verrouiller le téléphone, appeler `/api/rappels` (Authorization: Bearer CRON_SECRET) → la notification doit apparaître écran verrouillé ; un appui ouvre le dossier.
+
+## 0.3.0 — Migration Postgres (Supabase)
+- Toute la base passe par `DATABASE_URL` (Postgres). Testé sur un vrai Postgres 16 jetable (`tests/run.sh` le crée et le détruit ; si `DATABASE_URL` est fourni, il l'utilise à la place).
+- Création du salarié = transaction (salarié + 3 documents + journal + échéance, tout ou rien). Dates validées côté serveur.
+- Production : `GESTO_DATA_KEY` et `GESTO_SESSION_SECRET` obligatoires (l'app refuse de démarrer sans, plus de clé par défaut).
+- Auth maison (mot de passe scrypt + cookie signé) sur la table `users` ; Supabase Auth non utilisé (décision : moins de pièces). Pas de RLS Supabase : l'accès passe uniquement par le serveur Next.js avec la connexion Postgres — ne jamais exposer la clé `anon` ni ouvrir l'API REST Supabase sur ces tables.
+- NON TESTÉ sur un vrai projet Supabase (pas d'accès ici) : SSL/pooler. À valider au premier déploiement.
