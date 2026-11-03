@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, now, logError } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
+import { pushToCompany } from "@/lib/push";
 
 // À appeler chaque jour (Vercel Cron) avec l'en-tête Authorization: Bearer $CRON_SECRET.
 export async function GET(req: NextRequest) {
@@ -13,12 +14,16 @@ export async function GET(req: NextRequest) {
   const res = { envoyes: 0, non_envoyes: 0, plafonnes: 0 };
   for (const d of due) {
     try {
-      const sent = (db.prepare("SELECT COUNT(*) n FROM notifications WHERE company_id=? AND at>? AND status='envoye'").get(d.company_id, weekAgo) as { n: number }).n;
+      const sent = (db.prepare("SELECT COUNT(*) n FROM notifications WHERE company_id=? AND at>? AND status IN ('push_envoye','email_envoye')").get(d.company_id, weekAgo) as { n: number }).n;
       if (sent >= 2) { res.plafonnes++; continue; } // 2 notifications / semaine maximum
       const subject = `Gesto — échéance le ${new Date(d.due).toLocaleDateString("fr-FR")} : ${d.title}`;
-      const status = await sendMail(d.email, subject, `${d.title}\nÉchéance : ${new Date(d.due).toLocaleDateString("fr-FR")}\n\nConnecte-toi à Gesto pour la marquer comme faite.`);
+      const dateFr = new Date(d.due).toLocaleDateString("fr-FR");
+      let status = "non_envoye";
+      // 1) notification système (écran verrouillé) vers le dossier concerné ; 2) à défaut, email.
+      if ((await pushToCompany(d.company_id, { title: "Gesto — échéance", body: `${d.title} (${dateFr})`, url: `/echeances?id=${d.id}`, tag: `echeance-${d.id}` })) === "envoye") status = "push_envoye";
+      else if ((await sendMail(d.email, subject, `${d.title}\nÉchéance : ${dateFr}\n\nOuvre Gesto : /echeances?id=${d.id}`)) === "envoye") status = "email_envoye";
       db.prepare("INSERT INTO notifications(company_id,deadline_id,at,subject,status) VALUES(?,?,?,?,?)").run(d.company_id, d.id, now(), subject, status);
-      if (status === "envoye") { db.prepare("UPDATE deadlines SET last_reminded=? WHERE id=?").run(today, d.id); res.envoyes++; } else res.non_envoyes++;
+      if (status !== "non_envoye") { db.prepare("UPDATE deadlines SET last_reminded=? WHERE id=?").run(today, d.id); res.envoyes++; } else res.non_envoyes++;
     } catch (e) { logError("rappels", e); }
   }
   return NextResponse.json(res);

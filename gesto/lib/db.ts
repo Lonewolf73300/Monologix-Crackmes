@@ -10,7 +10,7 @@ const g = globalThis as unknown as { __db?: DatabaseSync };
 function open() {
   const db = new DatabaseSync(path.join(dir, "gesto.db"));
   db.exec(`
-  PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
+  PRAGMA busy_timeout=10000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;
   CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'patron', company_id INTEGER, consent_cgv INTEGER NOT NULL DEFAULT 0, consent_stats INTEGER NOT NULL DEFAULT 0, created TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS companies(id INTEGER PRIMARY KEY, owner_id INTEGER NOT NULL, name TEXT NOT NULL, type TEXT, dept TEXT, nb_sal TEXT, season TEXT, pains TEXT, objective TEXT, invite_code TEXT UNIQUE, consigne TEXT DEFAULT '', faq TEXT DEFAULT '[]', modules TEXT DEFAULT '{"paperasse":true,"salarie":true}');
   CREATE TABLE IF NOT EXISTS employees(id INTEGER PRIMARY KEY, company_id INTEGER NOT NULL, user_id INTEGER, enc TEXT NOT NULL, created TEXT NOT NULL);
@@ -20,8 +20,10 @@ function open() {
   CREATE TABLE IF NOT EXISTS notifications(id INTEGER PRIMARY KEY, company_id INTEGER NOT NULL, deadline_id INTEGER, at TEXT NOT NULL, subject TEXT NOT NULL, status TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS punches(id INTEGER PRIMARY KEY, company_id INTEGER NOT NULL, employee_id INTEGER NOT NULL, at TEXT NOT NULL, kind TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS purchases(id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, offer TEXT NOT NULL, status TEXT NOT NULL, stripe_id TEXT, created TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS push_subs(id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, company_id INTEGER NOT NULL, endpoint TEXT UNIQUE NOT NULL, p256dh TEXT NOT NULL, auth TEXT NOT NULL, created TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS errors(id INTEGER PRIMARY KEY, at TEXT NOT NULL, scope TEXT, message TEXT);
   `);
+  try { db.exec("ALTER TABLE deadlines ADD COLUMN employee_id INTEGER"); } catch { /* déjà présent */ }
   return db;
 }
 export const db: DatabaseSync = (g.__db ??= open());

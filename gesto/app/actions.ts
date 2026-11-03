@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { db, encrypt, decrypt, now, logError } from "@/lib/db";
 import { checkPassword, endSession, hashPassword, requirePatron, startSession, currentUser } from "@/lib/auth";
 import { extras } from "@/lib/flags";
-import type { Emp } from "@/lib/documents";
+import { missingInfo, type Emp } from "@/lib/documents";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -54,7 +54,7 @@ export async function createEmployee(_: unknown, f: FormData) {
     db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,1)").run(u.company_id, now(), u.email, `Document généré : ${kind} pour ${e.name}`, Number(d.lastInsertRowid));
   }
   // échéance : rappel pour la DPAE (avant la date d'embauche)
-  db.prepare("INSERT INTO deadlines(company_id,title,due,remind_days) VALUES(?,?,?,5)").run(u.company_id, `DPAE de ${e.name} à déclarer`, e.start);
+  db.prepare("INSERT INTO deadlines(company_id,title,due,remind_days,employee_id) VALUES(?,?,?,5,?)").run(u.company_id, `DPAE de ${e.name} à déclarer`, e.start, eid);
   revalidatePath("/", "layout");
   redirect("/documents");
 }
@@ -62,8 +62,9 @@ export async function createEmployee(_: unknown, f: FormData) {
 export async function validateDoc(f: FormData) {
   const u = await requirePatron();
   const id = Number(f.get("id"));
-  const d = db.prepare("SELECT id,version,kind FROM documents WHERE id=? AND company_id=?").get(id, u.company_id) as { id: number; version: number; kind: string } | undefined;
+  const d = db.prepare("SELECT d.id,d.version,d.kind,e.enc FROM documents d JOIN employees e ON e.id=d.employee_id WHERE d.id=? AND d.company_id=?").get(id, u.company_id) as { id: number; version: number; kind: string; enc: string } | undefined;
   if (!d) return;
+  if (d.kind === "contrat" && missingInfo(decrypt<Emp>(d.enc)).length) return; // validation refusée : infos manquantes
   db.prepare("UPDATE documents SET status='valide', validated_at=? WHERE id=?").run(now(), id);
   db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, `Document validé : ${d.kind}`, id, d.version);
   revalidatePath("/documents");
@@ -118,4 +119,19 @@ export async function punch(f: FormData) {
     db.prepare("INSERT INTO punches(company_id,employee_id,at,kind) VALUES(?,?,?,?)").run(u.company_id, emp.id, now(), kind);
   } catch (e) { logError("punch", e); }
   revalidatePath("/salarie");
+}
+
+export async function completeContract(f: FormData) {
+  const u = await requirePatron();
+  const eid = Number(f.get("employee_id"));
+  const row = db.prepare("SELECT enc FROM employees WHERE id=? AND company_id=?").get(eid, u.company_id) as { enc: string } | undefined;
+  if (!row) return;
+  const e = decrypt<Emp>(row.enc);
+  for (const k of ["convention", "essai", "motif"] as const) { const v = s(f, k); if (v) e[k] = v; }
+  db.prepare("UPDATE employees SET enc=? WHERE id=?").run(encrypt(e), eid);
+  // Le contrat change : nouvelle version, à relire et revalider.
+  const c = db.prepare("SELECT id,version FROM documents WHERE employee_id=? AND kind='contrat'").get(eid) as { id: number; version: number };
+  db.prepare("UPDATE documents SET version=version+1, status='a_relire', validated_at=NULL WHERE id=?").run(c.id);
+  db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, "Contrat complété, à revalider", c.id, c.version + 1);
+  revalidatePath("/documents");
 }

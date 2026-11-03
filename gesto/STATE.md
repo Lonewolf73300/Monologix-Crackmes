@@ -29,3 +29,18 @@ Le test de bout en bout n'est PAS encore validé :
 
 ## Décision (Lou : « à toi de voir »)
 Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1` pour les activer. Cœur V1 testé dans les deux modes. Reste à valider : vrai email (clé Resend) + démonstration à Lou.
+
+## Les 3 blocs V1 verrouillés — preuves (commande : `tests/run.sh 0`, base vierge, ~1 min)
+1. Saisie salarié persistante : fiche créée, chiffrée, retrouvée après redémarrage du serveur (test `persist.cjs`).
+2. Contrat avec alerte : infos manquantes (convention collective, période d'essai, motif CDD) → alerte rouge, validation et téléchargement bloqués côté serveur ; compléter → version 2 à revalider, journal horodaté.
+3. Rappel : échéance DPAE → à la date, notification système Web Push vers l'appareil abonné, lien `/echeances?id=…` qui ouvre le bon dossier ; repli email (Resend) ; sinon statut `non_envoye`, jamais faussement envoyé. 2 notifications/semaine max, pas de doublon.
+
+## Ce qui est prouvé / pas prouvé
+- PROUVÉ (automatisé) : le serveur Gesto envoie un message Web Push chiffré, signé VAPID, au service push (faux service HTTPS local) ; abonnement, journal et dossier persistent après redémarrage.
+- NON PROUVÉ : affichage réel sur téléphone verrouillé. Il dépend du service push du constructeur (FCM/Apple) et d'un vrai appareil. À tester par Lou : voir ci-dessous. iPhone : Gesto doit être ajouté à l'écran d'accueil (iOS 16.4+).
+- NON FAIT : migration Supabase (obligatoire avant mise en ligne ; SQLite ne tient pas sur Vercel), cron quotidien en ligne, clé Resend (repli email), icône PNG pour iOS.
+
+## Test réel sur téléphone (à faire par Lou)
+1. `npx web-push generate-vapid-keys` → VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY dans `.env.local`, + CRON_SECRET.
+2. Servir en HTTPS (obligatoire pour le push), ouvrir Gesto sur le téléphone, /echeances → « Activer les rappels sur cet appareil ».
+3. Créer une échéance du jour, verrouiller le téléphone, appeler `/api/rappels` (Authorization: Bearer CRON_SECRET) → la notification doit apparaître écran verrouillé ; un appui ouvre le dossier.

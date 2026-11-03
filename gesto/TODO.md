@@ -1,4 +1,10 @@
-# TODO
+# TODO (V1 verrouillée : 3 blocs)
+0. Test réel sur téléphone verrouillé (voir STATE.md) — BLOQUANT pour valider le rappel.
+1. Migration SQLite → Supabase (obligatoire avant mise en ligne).
+2. Cron quotidien en ligne sur /api/rappels ; clé Resend pour le repli email.
+3. Icône PNG (iOS) pour l'installation écran d'accueil.
+
+## Masqué (GESTO_EXTRAS) — ne pas toucher avant validation
 1. Migrer SQLite → Supabase Postgres + Auth (déploiement Vercel).
 2. Clés Stripe (test) : créer 2 prix, tester paiement/abonnement/résiliation/webhook ; codes promo Stripe.
 3. Clé Resend + Vercel Cron quotidien sur `/api/rappels`.

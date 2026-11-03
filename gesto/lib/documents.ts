@@ -1,6 +1,14 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType } from "docx";
 
-export type Emp = { name: string; post: string; start: string; hours: string; salary: string; contractType: string; end?: string };
+export type Emp = { name: string; post: string; start: string; hours: string; salary: string; contractType: string; end?: string; convention?: string; essai?: string; motif?: string };
+// Informations sans lesquelles le contrat ne peut pas être validé.
+export function missingInfo(e: Emp): { key: "convention" | "essai" | "motif"; label: string }[] {
+  const m: { key: "convention" | "essai" | "motif"; label: string }[] = [];
+  if (!e.convention?.trim()) m.push({ key: "convention", label: "Convention collective applicable" });
+  if (!e.essai?.trim()) m.push({ key: "essai", label: "Période d'essai (écris « aucune » s'il n'y en a pas)" });
+  if (e.contractType === "CDD" && !e.motif?.trim()) m.push({ key: "motif", label: "Motif de recours au CDD" });
+  return m;
+}
 export type Kind = "contrat" | "fiche_horaire" | "checklist_dpae";
 export const KIND_LABEL: Record<Kind, string> = { contrat: "Contrat de travail", fiche_horaire: "Fiche horaire", checklist_dpae: "Checklist DPAE" };
 export const MENTION = "Modèle préparé par Gesto, à relire et valider par le commerçant avant usage ; ce n'est pas un conseil juridique. À faire relire par un juriste en cas de doute.";
@@ -18,11 +26,11 @@ export async function buildDoc(kind: Kind, e: Emp, company: string): Promise<Buf
       p(`L'employeur : ${company}`), p(`Le salarié : ${e.name}`),
       h("Article 1 — Engagement"),
       p(`${e.name} est engagé(e) en qualité de ${e.post} à compter du ${fr(e.start)}, dans le cadre d'un contrat à durée ${cdd ? "déterminée" : "indéterminée"}.`),
-      ...(cdd ? [p(`Terme du contrat : ${fr(e.end ?? "")}. Motif de recours : à préciser par l'employeur (obligatoire pour un CDD).`)] : []),
+      ...(cdd ? [p(`Terme du contrat : ${fr(e.end ?? "")}. Motif de recours : ${e.motif || "…"}.`)] : []),
       h("Article 2 — Durée du travail"), p(`Durée hebdomadaire : ${e.hours} heures, répartie selon le planning remis au salarié.`),
       h("Article 3 — Rémunération"), p(`Rémunération mensuelle brute : ${e.salary} €, hors avantages éventuels.`),
-      h("Article 4 — Convention collective et mutuelle"), p("Convention collective applicable et affiliation à la mutuelle d'entreprise : à compléter par l'employeur."),
-      h("Article 5 — Période d'essai"), p("Durée éventuelle de la période d'essai : à compléter selon la convention collective."),
+      h("Article 4 — Convention collective et mutuelle"), p(`Convention collective applicable : ${e.convention || "…"}. Affiliation à la mutuelle d'entreprise : à vérifier par l'employeur.`),
+      h("Article 5 — Période d'essai"), p(`Période d'essai : ${e.essai || "…"}.`),
       h("Signatures"), p("Fait en deux exemplaires, le …… à ……"), p("L'employeur :                                   Le salarié :"),
     );
   } else if (kind === "fiche_horaire") {

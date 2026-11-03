@@ -4,6 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Gesto — Ta paperasse, c'est fini.",
+  manifest: "/manifest.webmanifest",
   description: "Gesto enlève la paperasse aux commerçants et restaurateurs et t'évite les oublis.",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
