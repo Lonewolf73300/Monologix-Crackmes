@@ -20,3 +20,9 @@ Test : `npm run build`, démarrer `next start -p 3100` avec `CRON_SECRET=testsec
 ## Écarts avec le prompt (à décider)
 - Stockage : SQLite local (node:sqlite) au lieu de Supabase. Incompatible Vercel (disque éphémère) → migrer vers Postgres/Supabase avant déploiement.
 - Écrans V2 non construits (verrou 10 commerçants). Rails : `companies.modules`, `users.role`.
+
+## CONSIGNE ABSOLUE (re-précisée par Lou) — statut honnête
+Le test de bout en bout n'est PAS encore validé :
+- OK automatisé : salarié → contrat à relire → validation → échéance → rappel déclenché dans sa fenêtre de dates (et pas avant).
+- MANQUE : le rappel n'est pas un « vrai » rappel tant qu'aucune clé Resend n'est branchée (statut `non_envoye`), et Lou ne l'a pas encore vu fonctionner.
+- Périmètre dépassé avant cette consigne : espace employé, /offres + Stripe, chapitre 1. À masquer derrière un indicateur ou à retirer si Lou le demande. Aucune autre brique ne démarre.

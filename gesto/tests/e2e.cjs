@@ -24,8 +24,9 @@ const ok = (c, m) => { if (!c) { console.error("ÉCHEC:", m); process.exit(1); }
   ok(dl.status() === 200 && buf.slice(0, 2).toString() === "PK", "DOCX téléchargé après validation");
   ok(await p.locator("text=Document validé").first().isVisible(), "journal de validation");
   await p.goto(B + "/echeances"); ok(await p.locator("text=DPAE de Léa Martin").isVisible(), "échéance DPAE créée automatiquement");
+  await p.fill("[name=title]", "Échéance lointaine"); await p.fill("[name=due]", new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10)); await p.click("button:has-text('Ajouter')"); await p.waitForSelector("text=Échéance lointaine");
   const rap = await p.request.get(B + "/api/rappels", { headers: { authorization: "Bearer testsecret" } });
-  const j = await rap.json(); ok(rap.status() === 200 && j.non_envoyes >= 1, "rappel déclenché (non envoyé : pas de clé Resend) " + JSON.stringify(j));
+  const j = await rap.json(); ok(rap.status() === 200 && j.non_envoyes + j.envoyes === 1, "rappel déclenché pour la DPAE (dans sa fenêtre) et PAS pour l'échéance à 30 jours " + JSON.stringify(j));
   ok((await p.request.get(B + "/api/rappels")).status() === 401, "rappels protégés");
   await p.goto(B + "/salaries"); const code = (await p.locator("span.font-mono").innerText()).trim();
   await p.fill("[name=consigne]", "Ouverture 11h30"); await p.click("button:has-text('Enregistrer')");
