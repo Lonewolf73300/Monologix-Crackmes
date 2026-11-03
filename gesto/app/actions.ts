@@ -1,0 +1,118 @@
+"use server";
+import crypto from "node:crypto";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { db, encrypt, decrypt, now, logError } from "@/lib/db";
+import { checkPassword, endSession, hashPassword, requirePatron, startSession, currentUser } from "@/lib/auth";
+import type { Emp } from "@/lib/documents";
+
+const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
+
+export async function signup(_: unknown, f: FormData) {
+  const email = s(f, "email").toLowerCase(), pw = s(f, "password");
+  if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "Email invalide." };
+  if (pw.length < 8) return { error: "Mot de passe : 8 caractères minimum." };
+  if (!f.get("cgv")) return { error: "Tu dois accepter les conditions d'utilisation." };
+  if (db.prepare("SELECT 1 FROM users WHERE email=?").get(email)) return { error: "Un compte existe déjà avec cet email." };
+  const r = db.prepare("INSERT INTO users(email,hash,consent_cgv,consent_stats,created) VALUES(?,?,1,?,?)")
+    .run(email, hashPassword(pw), f.get("stats") ? 1 : 0, now());
+  await startSession(Number(r.lastInsertRowid));
+  redirect("/diagnostic");
+}
+export async function login(_: unknown, f: FormData) {
+  const u = db.prepare("SELECT id,hash,role,company_id FROM users WHERE email=?").get(s(f, "email").toLowerCase()) as { id: number; hash: string; role: string; company_id: number | null } | undefined;
+  if (!u || !checkPassword(s(f, "password"), u.hash)) return { error: "Email ou mot de passe incorrect." };
+  await startSession(u.id);
+  redirect(u.role === "patron" ? "/tableau-de-bord" : "/salarie");
+}
+export async function logout() { await endSession(); redirect("/"); }
+
+export async function saveDiagnostic(data: { name: string; type: string; dept: string; nb_sal: string; season: string; pains: string[]; objective: string }) {
+  const u = await currentUser();
+  if (!u || u.role !== "patron") redirect("/connexion");
+  if (u.company_id) {
+    db.prepare("UPDATE companies SET name=?,type=?,dept=?,nb_sal=?,season=?,pains=?,objective=? WHERE id=?")
+      .run(data.name, data.type, data.dept, data.nb_sal, data.season, JSON.stringify(data.pains), data.objective, u.company_id);
+  } else {
+    const r = db.prepare("INSERT INTO companies(owner_id,name,type,dept,nb_sal,season,pains,objective,invite_code) VALUES(?,?,?,?,?,?,?,?,?)")
+      .run(u.id, data.name, data.type, data.dept, data.nb_sal, data.season, JSON.stringify(data.pains), data.objective, crypto.randomBytes(4).toString("hex").toUpperCase());
+    db.prepare("UPDATE users SET company_id=? WHERE id=?").run(Number(r.lastInsertRowid), u.id);
+  }
+  redirect("/tableau-de-bord");
+}
+
+export async function createEmployee(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  const e: Emp = { name: s(f, "name"), post: s(f, "post"), start: s(f, "start"), hours: s(f, "hours"), salary: s(f, "salary"), contractType: s(f, "contractType"), end: s(f, "end") };
+  if (!e.name || !e.post || !e.start || !e.hours || !e.salary) return { error: "Les six questions sont obligatoires." };
+  if (e.contractType === "CDD" && !e.end) return { error: "Pour un CDD, indique la date de fin." };
+  const r = db.prepare("INSERT INTO employees(company_id,enc,created) VALUES(?,?,?)").run(u.company_id, encrypt(e), now());
+  const eid = Number(r.lastInsertRowid);
+  for (const kind of ["contrat", "fiche_horaire", "checklist_dpae"]) {
+    const d = db.prepare("INSERT INTO documents(company_id,employee_id,kind,created) VALUES(?,?,?,?)").run(u.company_id, eid, kind, now());
+    db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,1)").run(u.company_id, now(), u.email, `Document généré : ${kind} pour ${e.name}`, Number(d.lastInsertRowid));
+  }
+  // échéance : rappel pour la DPAE (avant la date d'embauche)
+  db.prepare("INSERT INTO deadlines(company_id,title,due,remind_days) VALUES(?,?,?,5)").run(u.company_id, `DPAE de ${e.name} à déclarer`, e.start);
+  revalidatePath("/", "layout");
+  redirect("/documents");
+}
+
+export async function validateDoc(f: FormData) {
+  const u = await requirePatron();
+  const id = Number(f.get("id"));
+  const d = db.prepare("SELECT id,version,kind FROM documents WHERE id=? AND company_id=?").get(id, u.company_id) as { id: number; version: number; kind: string } | undefined;
+  if (!d) return;
+  db.prepare("UPDATE documents SET status='valide', validated_at=? WHERE id=?").run(now(), id);
+  db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, `Document validé : ${d.kind}`, id, d.version);
+  revalidatePath("/documents");
+}
+
+export async function addDeadline(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  const title = s(f, "title"), due = s(f, "due");
+  if (!title || !due) return { error: "Titre et date obligatoires." };
+  db.prepare("INSERT INTO deadlines(company_id,title,due,remind_days) VALUES(?,?,?,?)").run(u.company_id, title, due, Number(s(f, "remind")) || 7);
+  revalidatePath("/echeances");
+  return { ok: true };
+}
+export async function toggleDeadline(f: FormData) {
+  const u = await requirePatron();
+  db.prepare("UPDATE deadlines SET done=1-done WHERE id=? AND company_id=?").run(Number(f.get("id")), u.company_id);
+  revalidatePath("/echeances");
+}
+
+export async function saveConsigne(f: FormData) {
+  const u = await requirePatron();
+  const faq = s(f, "faq").split("\n").map((l) => l.trim()).filter(Boolean).map((l) => { const [q, ...a] = l.split("|"); return { q: q.trim(), a: a.join("|").trim() }; }).filter((x) => x.a);
+  db.prepare("UPDATE companies SET consigne=?, faq=? WHERE id=?").run(s(f, "consigne"), JSON.stringify(faq), u.company_id);
+  revalidatePath("/salaries");
+}
+
+export async function joinCompany(_: unknown, f: FormData) {
+  const code = s(f, "code").toUpperCase(), email = s(f, "email").toLowerCase(), pw = s(f, "password");
+  const co = db.prepare("SELECT id FROM companies WHERE invite_code=?").get(code) as { id: number } | undefined;
+  if (!co) return { error: "Code d'invitation inconnu." };
+  const emp = db.prepare("SELECT id,enc FROM employees WHERE company_id=? AND user_id IS NULL").all(co.id) as { id: number; enc: string }[];
+  const match = emp.find((x) => decrypt<Emp>(x.enc).name.toLowerCase() === s(f, "name").toLowerCase());
+  if (!match) return { error: "Nom non trouvé : demande à ton patron d'ajouter ta fiche." };
+  if (!/^\S+@\S+\.\S+$/.test(email) || pw.length < 8) return { error: "Email valide et mot de passe de 8 caractères minimum." };
+  if (db.prepare("SELECT 1 FROM users WHERE email=?").get(email)) return { error: "Email déjà utilisé." };
+  const r = db.prepare("INSERT INTO users(email,hash,role,company_id,consent_cgv,created) VALUES(?,?,'salarie',?,1,?)").run(email, hashPassword(pw), co.id, now());
+  db.prepare("UPDATE employees SET user_id=? WHERE id=?").run(Number(r.lastInsertRowid), match.id);
+  await startSession(Number(r.lastInsertRowid));
+  redirect("/salarie");
+}
+
+export async function punch(f: FormData) {
+  const u = await currentUser();
+  if (!u || u.role !== "salarie" || !u.company_id) redirect("/connexion");
+  const kind = s(f, "kind");
+  if (!["arrive", "pause", "reprise", "part"].includes(kind)) return;
+  try {
+    const emp = db.prepare("SELECT id FROM employees WHERE user_id=?").get(u.id) as { id: number };
+    // Pointage sans position : simple bouton (la géolocalisation n'est pas activée).
+    db.prepare("INSERT INTO punches(company_id,employee_id,at,kind) VALUES(?,?,?,?)").run(u.company_id, emp.id, now(), kind);
+  } catch (e) { logError("punch", e); }
+  revalidatePath("/salarie");
+}

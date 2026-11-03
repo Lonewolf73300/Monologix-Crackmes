@@ -1,0 +1,29 @@
+import { requirePatron } from "@/lib/auth";
+import { db, decrypt } from "@/lib/db";
+import { validateDoc } from "../actions";
+import { KIND_LABEL, MENTION, type Emp, type Kind } from "@/lib/documents";
+
+type Row = { id: number; kind: Kind; status: string; version: number; validated_at: string | null; enc: string };
+export default async function Page() {
+  const u = await requirePatron();
+  const rows = db.prepare("SELECT d.id,d.kind,d.status,d.version,d.validated_at,e.enc FROM documents d JOIN employees e ON e.id=d.employee_id WHERE d.company_id=? ORDER BY d.id DESC").all(u.company_id) as Row[];
+  const log = db.prepare("SELECT at,actor,action,version FROM journal WHERE company_id=? ORDER BY id DESC LIMIT 30").all(u.company_id) as { at: string; actor: string; action: string; version: number }[];
+  return (
+    <main className="mx-auto max-w-3xl px-5 pb-10">
+      <h1 className="text-3xl font-bold">Mes documents</h1>
+      <p className="mt-2 rounded-xl border border-line bg-panel p-3 text-xs text-zinc-400">{MENTION}</p>
+      <ul className="mt-6 space-y-3">{rows.map((r) => (
+        <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-panel p-4">
+          <div><p className="font-semibold">{KIND_LABEL[r.kind]} — {decrypt<Emp>(r.enc).name}</p><p className="text-sm text-zinc-400">v{r.version} · {r.status === "valide" ? `validé le ${new Date(r.validated_at!).toLocaleString("fr-FR")}` : "à relire"}</p></div>
+          <div className="flex gap-2">
+            <a href={`/api/documents/${r.id}?apercu=1`} className="rounded-lg border border-line px-3 py-2 text-sm">Relire</a>
+            {r.status === "valide" ? <a href={`/api/documents/${r.id}`} className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-black">Télécharger</a>
+              : <form action={validateDoc}><input type="hidden" name="id" value={r.id} /><button className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-black">J&apos;ai relu, je valide</button></form>}
+          </div>
+        </li>))}
+        {!rows.length && <li className="text-zinc-500">Aucun document. Crée un salarié pour en générer.</li>}</ul>
+      <h2 className="mt-10 text-xl font-semibold">Journal de validation</h2>
+      <ul className="mt-2 space-y-1 text-sm text-zinc-400">{log.map((l, i) => <li key={i}>{new Date(l.at).toLocaleString("fr-FR")} · {l.actor} · {l.action} (v{l.version})</li>)}</ul>
+    </main>
+  );
+}
