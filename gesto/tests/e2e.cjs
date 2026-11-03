@@ -28,8 +28,9 @@ const ok = (c, m) => { if (!c) { console.error("ÉCHEC:", m); process.exit(1); }
   const rap = await p.request.get(B + "/api/rappels", { headers: { authorization: "Bearer testsecret" } });
   const j = await rap.json(); ok(rap.status() === 200 && j.non_envoyes + j.envoyes === 1, "rappel déclenché pour la DPAE (dans sa fenêtre) et PAS pour l'échéance à 30 jours " + JSON.stringify(j));
   ok((await p.request.get(B + "/api/rappels")).status() === 401, "rappels protégés");
+  if (process.env.GESTO_EXTRAS !== "1") { ok((await p.request.get(B + "/offres")).status() === 404 && (await p.request.get(B + "/salarie")).status() === 404, "extras masqués par défaut"); await br.close(); console.log("TOUS LES TESTS PASSENT (cœur V1)"); return; }
   await p.goto(B + "/salaries"); const code = (await p.locator("span.font-mono").innerText()).trim();
-  await p.fill("[name=consigne]", "Ouverture 11h30"); await p.click("button:has-text('Enregistrer')");
+  await p.fill("[name=consigne]", "Ouverture 11h30"); await p.click("button:has-text('Enregistrer')"); await p.waitForLoadState("networkidle"); await p.waitForTimeout(500);
   const ctx2 = await br.newContext(); const e = await ctx2.newPage();
   await e.goto(B + "/rejoindre"); await e.fill("[name=code]", code); await e.fill("[name=name]", "Léa Martin");
   await e.fill("[name=email]", `lea${Date.now()}@test.fr`); await e.fill("[name=password]", "motdepasse1"); await e.click("button:has-text('Rejoindre')");

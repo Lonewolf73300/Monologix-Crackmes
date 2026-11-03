@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db, encrypt, decrypt, now, logError } from "@/lib/db";
 import { checkPassword, endSession, hashPassword, requirePatron, startSession, currentUser } from "@/lib/auth";
+import { extras } from "@/lib/flags";
 import type { Emp } from "@/lib/documents";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -90,6 +91,7 @@ export async function saveConsigne(f: FormData) {
 }
 
 export async function joinCompany(_: unknown, f: FormData) {
+  if (!extras) return { error: "Indisponible." };
   const code = s(f, "code").toUpperCase(), email = s(f, "email").toLowerCase(), pw = s(f, "password");
   const co = db.prepare("SELECT id FROM companies WHERE invite_code=?").get(code) as { id: number } | undefined;
   if (!co) return { error: "Code d'invitation inconnu." };
@@ -105,6 +107,7 @@ export async function joinCompany(_: unknown, f: FormData) {
 }
 
 export async function punch(f: FormData) {
+  if (!extras) return;
   const u = await currentUser();
   if (!u || u.role !== "salarie" || !u.company_id) redirect("/connexion");
   const kind = s(f, "kind");

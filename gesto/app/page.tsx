@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { extras } from "@/lib/flags";
 
 const proofs = [
   ["Un document en 30 secondes", "Six questions, et le contrat, la fiche horaire et la checklist DPAE sont prêts à relire."],
@@ -40,7 +41,7 @@ export default function Home() {
           <div className="rounded-2xl border border-line bg-panel p-6">
             <p className="text-sm text-accent">Fais-le pour moi</p>
             <p className="mt-1 text-3xl font-bold">24 € <span className="text-base font-normal text-zinc-500">par mois</span></p>
-            <p className="mt-3 text-sm text-zinc-400">Gesto prépare tes documents, les tient à jour et te rappelle tes échéances. Résiliation en un clic. <Link href="/offres" className="underline">Voir l'offre</Link></p>
+            <p className="mt-3 text-sm text-zinc-400">Gesto prépare tes documents, et te rappelle tes échéances. {extras && <Link href="/offres" className="underline">Voir l'offre</Link>}</p>
           </div>
         </div>
       </section>
@@ -64,3 +65,4 @@ export default function Home() {
     </main>
   );
 }
+export const dynamic = "force-dynamic";

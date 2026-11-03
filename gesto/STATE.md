@@ -1,7 +1,7 @@
 # STATE — Gesto V1
 
 Dossier : `gesto/` (Next.js 15 App Router, TypeScript, Tailwind). Lancer : `npm i && npm run dev`.
-Test : `npm run build`, démarrer `next start -p 3100` avec `CRON_SECRET=testsecret` et un `GESTO_DATA_DIR` vierge, puis `npm run test:e2e` (Playwright).
+Test : `npm run build`, démarrer `next start -p 3100` avec `CRON_SECRET=testsecret` et un `GESTO_DATA_DIR` vierge, puis ``tests/run.sh 0` (cœur V1) ou `tests/run.sh 1` (avec extras) — lance serveur + base vierge + test Playwright.
 
 ## Fonctionnel et testé (le test de bout en bout passe)
 - Accueil, chapitre 1 gratuit, page « ce que Gesto fait / ne fait pas ».
@@ -26,3 +26,6 @@ Le test de bout en bout n'est PAS encore validé :
 - OK automatisé : salarié → contrat à relire → validation → échéance → rappel déclenché dans sa fenêtre de dates (et pas avant).
 - MANQUE : le rappel n'est pas un « vrai » rappel tant qu'aucune clé Resend n'est branchée (statut `non_envoye`), et Lou ne l'a pas encore vu fonctionner.
 - Périmètre dépassé avant cette consigne : espace employé, /offres + Stripe, chapitre 1. À masquer derrière un indicateur ou à retirer si Lou le demande. Aucune autre brique ne démarre.
+
+## Décision (Lou : « à toi de voir »)
+Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1` pour les activer. Cœur V1 testé dans les deux modes. Reste à valider : vrai email (clé Resend) + démonstration à Lou.

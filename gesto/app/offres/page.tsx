@@ -1,8 +1,11 @@
+import { notFound } from "next/navigation";
+import { extras } from "@/lib/flags";
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 
 export const metadata = { title: "Choisir mon offre" };
 export default async function Page() {
+  if (!extras) notFound();
   const u = await currentUser();
   const configured = !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_PRICE_COURS && !!process.env.STRIPE_PRICE_ABO;
   const offers = [
@@ -25,3 +28,4 @@ export default async function Page() {
     </main>
   );
 }
+export const dynamic = "force-dynamic";

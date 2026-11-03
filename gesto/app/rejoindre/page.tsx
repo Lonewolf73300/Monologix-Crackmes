@@ -1,6 +1,9 @@
+import { notFound } from "next/navigation";
+import { extras } from "@/lib/flags";
 import { Form, Field } from "../ui";
 import { joinCompany } from "../actions";
 export default function Page() {
+  if (!extras) notFound();
   return (
     <main className="mx-auto max-w-md px-5 pb-10">
       <h1 className="text-3xl font-bold">Rejoindre mon employeur</h1>
@@ -14,3 +17,4 @@ export default function Page() {
     </main>
   );
 }
+export const dynamic = "force-dynamic";

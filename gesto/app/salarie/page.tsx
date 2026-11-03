@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+import { extras } from "@/lib/flags";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { db, decrypt } from "@/lib/db";
@@ -6,6 +8,7 @@ import type { Emp } from "@/lib/documents";
 
 const LABEL: Record<string, string> = { arrive: "Arrivé", pause: "En pause", reprise: "Repris", part: "Parti" };
 export default async function Page() {
+  if (!extras) notFound();
   const u = await currentUser();
   if (!u) redirect("/connexion");
   if (u.role !== "salarie") redirect("/tableau-de-bord");
@@ -34,3 +37,4 @@ export default async function Page() {
     </main>
   );
 }
+export const dynamic = "force-dynamic";
