@@ -1,12 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body { background: #f6f5f1; color: #141414; font-feature-settings: "ss01", "cv11"; -webkit-font-smoothing: antialiased; }
-::selection { background: #1f5a4333; }
+body { background: #f3f5f8; color: #0f172a; -webkit-font-smoothing: antialiased; }
+::selection { background: #1f9d4c33; }
 @layer components {
-  .card { @apply rounded-xl border border-line bg-panel; }
-  .eyebrow { @apply font-mono text-[11px] uppercase tracking-label text-zinc-500; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-medium transition-colors; }
-  .btn-primary { @apply btn bg-accent text-white hover:bg-[#184a37]; }
-  .btn-ghost { @apply btn border border-line bg-panel text-[#141414] hover:border-zinc-400; }
+  .card { @apply rounded-2xl border border-line bg-panel shadow-card; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-wider text-zinc-500; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition; }
+  .btn-primary { @apply btn bg-gradient-to-b from-[#25b157] to-[#1a8b43] text-white shadow-green hover:brightness-105; }
+  .btn-ghost { @apply btn border border-line bg-white text-[#0f172a] hover:border-zinc-600; }
+  .btn-gold { @apply btn bg-gradient-to-b from-[#f0c464] to-[#d49a35] text-[#1f1a10] hover:brightness-105; }
 }

@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/connexion" className="font-medium hover:underline">Connexion</Link>
             </nav>
           </header>)}
-        <div className={patron ? "pb-24 pt-6 md:pb-0 md:pl-64 md:pt-10" : ""}>
+        <div className={patron ? "pb-28 lg:pb-0 lg:pl-64" : ""}>
           {children}
           <footer className={`mx-auto max-w-5xl px-5 py-10 text-xs text-zinc-500 ${user?.role === "salarie" ? "hidden" : ""}`}>
             Gesto prépare, rappelle et organise. Gesto ne déclare rien à ta place et ne remplace ni un avocat, ni un expert-comptable.{" "}

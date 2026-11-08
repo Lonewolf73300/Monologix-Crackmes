@@ -9,7 +9,7 @@ export default async function Page() {
   const rows = await db.prepare("SELECT d.employee_id,d.id,d.kind,d.status,d.version,d.validated_at,e.enc FROM documents d JOIN employees e ON e.id=d.employee_id WHERE d.company_id=? ORDER BY d.id DESC").all(u.company_id) as Row[];
   const log = await db.prepare("SELECT at,actor,action,version FROM journal WHERE company_id=? ORDER BY id DESC LIMIT 30").all(u.company_id) as { at: string; actor: string; action: string; version: number }[];
   return (
-    <main className="mx-auto max-w-3xl px-5 pb-10">
+    <main className="mx-auto max-w-3xl px-5 pb-10 pt-8 lg:pt-12">
       <h1 className="text-3xl font-semibold tracking-tight">Mes documents</h1>
       <p className="mt-2 rounded-lg border border-line bg-panel p-3 text-xs text-zinc-400">{MENTION}</p>
       <ul className="mt-6 space-y-3">{rows.map((r) => { const miss = r.kind === "contrat" ? missingInfo(decrypt<Emp>(r.enc)) : []; return (

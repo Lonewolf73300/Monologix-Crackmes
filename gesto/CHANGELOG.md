@@ -19,3 +19,6 @@
 
 ## 0.6.0
 - Refonte design pro : Geist, palette papier/encre/vert alpin, courbes de niveau, tableau « Aujourd'hui », pointeuse salarié, accueil éditorial.
+
+## 0.7.0
+- Design calqué sur les maquettes (cartes blanches, vert/or, pastilles d'icônes, priorité, coup d'œil, pointeuse salarié), emplacement pour une vraie photo de bannière.

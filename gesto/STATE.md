@@ -74,3 +74,9 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 - Plus d'illustration ni d'emoji : motif de courbes de niveau généré (`Contours`, `app/brand.tsx`) pour l'identité montagne ; logo = carré vert + coche (« document validé ») + mot « gesto ».
 - Patron « Aujourd'hui » : titre-phrase (« 4 points à traiter aujourd'hui »), bande sombre de chiffres (salariés, à relire, échéances ouvertes, J-x), liste « À traiter » à barres de statut, raccourcis. Barre latérale sombre, compte + déconnexion en bas.
 - Salarié : écran pointeuse — grande horloge en direct (heure de Paris), statut, un seul bouton, consigne en citation, FAQ. Pas de barre d'onglets (un seul écran).
+
+## 0.7.0 — Design calqué sur les maquettes de Lou (remplace 0.6.0, jugé « trop vide, austère »)
+- Fond gris clair, cartes blanches ombrées, boutons verts en dégradé, accent or, pastilles d'icônes teintées, barre latérale sombre avec onglet doré (desktop), barre d'onglets blanche à pastille (mobile). Icônes au trait maison (`app/icons.tsx`).
+- Patron : bannière + « Bonjour », 3 raccourcis (Nouveau salarié en or), carte « priorité » (la chose la plus urgente, un bouton), « En un coup d'œil » (prochaine échéance J-x, salariés, à relire, urgents), « Ensuite », « Derniers documents » (relire / valider en un clic), panneau sombre « Mon cours ». Toutes les données sont réelles.
+- Salarié : bannière, « Bonjour {prénom} · Prêt pour le service ? », 3 tuiles (date, heure en direct, pointage), poste, consigne, gros bouton vert unique, FAQ.
+- Bannière : `app/banner.tsx`. Si `public/banniere.jpg` existe (vraie photo du Chamois), elle remplace automatiquement la scène dessinée.

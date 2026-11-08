@@ -4,7 +4,7 @@ import { createEmployee } from "../../actions";
 export default async function Page() {
   await requirePatron();
   return (
-    <main className="mx-auto max-w-md px-5 pb-10">
+    <main className="mx-auto max-w-md px-5 pb-10 pt-8 lg:pt-12">
       <h1 className="text-3xl font-semibold tracking-tight">Nouveau salarié</h1>
       <p className="mt-2 text-sm text-zinc-400">Six questions : Gesto prépare le contrat, la fiche horaire et la checklist DPAE.</p>
       <div className="mt-6"><Form action={createEmployee} submit="Générer les documents">

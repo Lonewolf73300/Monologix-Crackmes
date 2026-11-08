@@ -11,7 +11,7 @@ export default async function Page() {
   const co = await db.prepare("SELECT invite_code,consigne,faq FROM companies WHERE id=?").get(u.company_id) as { invite_code: string; consigne: string; faq: string };
   const faq = (JSON.parse(co.faq) as { q: string; a: string }[]).map((x) => `${x.q} | ${x.a}`).join("\n");
   return (
-    <main className="mx-auto max-w-3xl px-5 pb-10">
+    <main className="mx-auto max-w-3xl px-5 pb-10 pt-8 lg:pt-12">
       <div className="flex items-center justify-between"><h1 className="text-3xl font-semibold tracking-tight">Mes employés</h1><Link href="/salaries/nouveau" className="rounded-lg bg-accent px-4 py-2 font-semibold text-white">+ Nouveau salarié</Link></div>
       <ul className="mt-6 space-y-2">{rows.map((r) => { const e = decrypt<Emp>(r.enc); return <li key={r.id} className="rounded-lg border border-line bg-panel p-4"><p className="font-semibold">{e.name}</p><p className="text-sm text-zinc-400">{e.post} · {e.contractType} · {e.hours} h · depuis le {new Date(e.start).toLocaleDateString("fr-FR")} · {r.user_id ? "espace activé" : "invitation en attente"}</p></li>; })}
         {!rows.length && <li className="text-zinc-500">Aucun salarié pour l&apos;instant.</li>}</ul>

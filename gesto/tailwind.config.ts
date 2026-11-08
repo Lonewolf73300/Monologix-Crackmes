@@ -5,13 +5,15 @@ const config: Config = {
     extend: {
       fontFamily: { sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"], mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"] },
       colors: {
-        // Papier chaud, encre, filets fins, un seul accent (vert alpin profond).
-        ink: "#f6f5f1", panel: "#ffffff", line: "#e4e2dc", accent: "#1f5a43", gold: "#b08a4a", night: "#101112",
-        ok: "#067647", warn: "#b54708", bad: "#b42318", info: "#175cd3",
-        zinc: { 200: "#d6d3cc", 300: "#3f3d39", 400: "#57534e", 500: "#78716c", 600: "#a8a29e" },
+        ink: "#f3f5f8", panel: "#ffffff", line: "#e6eaf0", accent: "#1f9d4c", gold: "#d9a441", night: "#12141a",
+        ok: "#16a34a", warn: "#d97706", bad: "#dc2626", info: "#2563eb",
+        zinc: { 200: "#cbd5e1", 300: "#334155", 400: "#475569", 500: "#64748b", 600: "#94a3b8" },
       },
-      boxShadow: { card: "0 1px 0 rgba(16,17,18,.04)", lift: "0 12px 32px -12px rgba(16,17,18,.18)" },
-      letterSpacing: { label: ".08em" },
+      boxShadow: {
+        card: "0 1px 2px rgba(16,24,40,.04), 0 6px 20px rgba(16,24,40,.06)",
+        lift: "0 10px 30px -10px rgba(16,24,40,.25)",
+        green: "0 10px 24px -10px rgba(31,157,76,.7)",
+      },
     },
   },
   plugins: [],

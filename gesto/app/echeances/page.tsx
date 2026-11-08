@@ -16,7 +16,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ i
   const fdocs = focus?.employee_id ? await db.prepare("SELECT id,kind,status,version FROM documents WHERE employee_id=? AND company_id=?").all(focus.employee_id, u.company_id) as { id: number; kind: Kind; status: string; version: number }[] : [];
   const today = new Date().toISOString().slice(0, 10);
   return (
-    <main className="mx-auto max-w-3xl px-5 pb-10">
+    <main className="mx-auto max-w-3xl px-5 pb-10 pt-8 lg:pt-12">
       <h1 className="text-3xl font-semibold tracking-tight">Mes échéances</h1>
       <p className="mt-2 text-sm text-zinc-400">Rappel à la bonne date par notification système, à défaut par email (2 par semaine maximum).</p>
       {focus && (
