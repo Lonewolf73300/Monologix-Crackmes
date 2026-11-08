@@ -5,11 +5,12 @@ import { pushConfigured } from "@/lib/push";
 import { missingInfo, type Emp } from "@/lib/documents";
 import { logout } from "../actions";
 import { Tile } from "../tile";
-import { Avatar, Hero } from "../brand";
+import { Contours } from "../brand";
 
+const TZ = "Europe/Paris";
 export default async function Page() {
   const u = await requirePatron();
-  const co = (await db.prepare("SELECT name,invite_code FROM companies WHERE id=?").get(u.company_id)) as { name: string };
+  const co = (await db.prepare("SELECT name FROM companies WHERE id=?").get(u.company_id)) as { name: string };
   const n = async (sql: string, ...p: unknown[]) => ((await db.prepare(sql).get(u.company_id, ...p)) as { n: number }).n;
   const today = new Date().toISOString().slice(0, 10);
   const in7 = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
@@ -18,65 +19,81 @@ export default async function Page() {
   const open = await n("SELECT COUNT(*) n FROM deadlines WHERE company_id=? AND done=0");
   const late = (await db.prepare("SELECT id,title,due FROM deadlines WHERE company_id=? AND done=0 AND due<? ORDER BY due").all(u.company_id, today)) as { id: number; title: string; due: string }[];
   const soon = (await db.prepare("SELECT id,title,due FROM deadlines WHERE company_id=? AND done=0 AND due>=? AND due<=? ORDER BY due").all(u.company_id, today, in7)) as { id: number; title: string; due: string }[];
+  const next = (await db.prepare("SELECT due FROM deadlines WHERE company_id=? AND done=0 AND due>=? ORDER BY due LIMIT 1").get(u.company_id, today)) as { due: string } | undefined;
   const contracts = (await db.prepare("SELECT e.enc FROM documents d JOIN employees e ON e.id=d.employee_id WHERE d.company_id=? AND d.kind='contrat' AND d.status='a_relire'").all(u.company_id)) as { enc: string }[];
   const blocked = contracts.filter((c) => missingInfo(decrypt<Emp>(c.enc)).length > 0).length;
   const devices = await n("SELECT COUNT(*) n FROM push_subs WHERE company_id=?");
-  const fr = (d: string) => new Date(d).toLocaleDateString("fr-FR");
 
+  const fr = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  const days = (d: string) => Math.round((Date.parse(d) - Date.parse(today)) / 864e5);
+  const rel = (d: string) => { const k = days(d); return k < 0 ? `en retard de ${-k} j` : k === 0 ? "aujourd'hui" : `dans ${k} j`; };
   const tiles = [
-    ...late.map((d) => <Tile key={`l${d.id}`} tone="rouge" label="En retard" title={`${d.title} (${fr(d.due)})`} href={`/echeances?id=${d.id}`} />),
-    ...(blocked ? [<Tile key="b" tone="rouge" label="Contrat bloqué" title={`${blocked} contrat${blocked > 1 ? "s" : ""} : informations manquantes`} href="/documents" action="Compléter" />] : []),
-    ...soon.map((d) => <Tile key={`s${d.id}`} tone="orange" label="À traiter" title={`${d.title} (${fr(d.due)})`} href={`/echeances?id=${d.id}`} />),
-    ...(toReview ? [<Tile key="r" tone="orange" label="À relire" title={`${toReview} document${toReview > 1 ? "s" : ""} en attente de validation`} href="/documents" />] : []),
-    ...(pushConfigured() && devices === 0 ? [<Tile key="p" tone="bleu" label="Information" title="Active les rappels sur ton téléphone" href="/echeances" action="Activer" />] : []),
+    ...late.map((d) => <Tile variant="row" key={`l${d.id}`} tone="rouge" label="En retard" title={d.title} meta={`${fr(d.due)} · ${rel(d.due)}`} href={`/echeances?id=${d.id}`} />),
+    ...(blocked ? [<Tile variant="row" key="b" tone="rouge" label="Contrat bloqué" title={`${blocked} contrat${blocked > 1 ? "s" : ""} : informations manquantes`} href="/documents" action="Compléter" />] : []),
+    ...soon.map((d) => <Tile variant="row" key={`s${d.id}`} tone="orange" label="Échéance" title={d.title} meta={`${fr(d.due)} · ${rel(d.due)}`} href={`/echeances?id=${d.id}`} />),
+    ...(toReview ? [<Tile variant="row" key="r" tone="orange" label="À relire" title={`${toReview} document${toReview > 1 ? "s" : ""} en attente de validation`} href="/documents" action="Relire" />] : []),
+    ...(pushConfigured() && devices === 0 ? [<Tile variant="row" key="p" tone="bleu" label="Rappels" title="Active les notifications sur ton téléphone" href="/echeances" action="Activer" />] : []),
   ];
-  const alerts = late.length + soon.length;
-  const actions = [
-    { href: "/salaries/nouveau", t: "Nouveau salarié", d: "Contrat, fiche horaire, DPAE", primary: true },
-    { href: "/documents", t: "Mes documents", d: toReview ? `${toReview} à relire` : "Rien en attente" },
-    { href: "/echeances", t: "Mes échéances", d: `${open} à venir` },
+  const urgent = late.length + (blocked ? 1 : 0);
+  const todo = tiles.length;
+  const dateLong = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: TZ });
+  const metrics: [string, string][] = [
+    [String(emps), emps > 1 ? "Salariés" : "Salarié"],
+    [String(toReview), "À relire"],
+    [String(open), "Échéances ouvertes"],
+    [next ? (days(next.due) === 0 ? "J" : `J-${days(next.due)}`) : "—", "Prochaine échéance"],
   ];
+
   return (
-    <main className="mx-auto max-w-4xl px-4 pb-10 md:px-6">
-      <section className="relative overflow-hidden rounded-3xl bg-night shadow-card">
-        <Hero className="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
-        <div className="relative flex min-h-[18rem] flex-col justify-between p-5 md:p-7">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3 text-white"><Avatar name={co.name} /><div><p className="text-sm text-white/80"><span className="hidden sm:inline">Propriétaire · </span>{co.name}</p></div></div>
-            <div className="flex items-center gap-4">
-              <Link href="/echeances" aria-label={`Échéances à traiter : ${alerts}`} className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-800">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0" /></svg>
-                {alerts > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-bad px-1 text-xs font-bold text-white">{alerts}</span>}
-              </Link>
-              <form action={logout}><button className="text-sm text-white/80 underline">Déconnexion</button></form>
-            </div>
+    <main className="mx-auto max-w-5xl px-5 md:px-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="w-full md:w-auto">
+          <div className="flex items-center justify-between gap-4">
+            <p className="eyebrow first-letter:uppercase">{dateLong} · {co.name}</p>
+            <form action={logout} className="md:hidden"><button className="text-xs text-zinc-500 underline underline-offset-2">Déconnexion</button></form>
           </div>
-          <div className="text-white">
-            <h1 className="text-3xl font-bold md:text-4xl">Bonjour 👋</h1>
-            <p className="mt-1 max-w-md text-white/85">Gérez vos salariés, vos documents et vos échéances, tout en un seul endroit.</p>
-          </div>
+          <h1 className="mt-2 text-[32px] font-semibold leading-[1.1] tracking-tight md:text-[44px]">
+            {todo ? <>{todo} point{todo > 1 ? "s" : ""} à traiter<span className="text-zinc-500"> aujourd&apos;hui.</span></> : <>Tout est en ordre.</>}
+          </h1>
+          <p className="mt-2 text-zinc-400">{todo ? `${urgent} bloquant${urgent > 1 ? "s" : ""} · ${todo - urgent} à prévoir` : "Aucune échéance dans les 7 jours, aucun document en attente."}</p>
         </div>
+        <Link href="/salaries/nouveau" className="btn-primary w-full md:w-auto">+ Nouveau salarié</Link>
+      </header>
+
+      <section className="relative mt-8 overflow-hidden rounded-xl bg-night text-white">
+        <Contours className="absolute inset-0 h-full w-full" />
+        <dl className="relative grid grid-cols-2 md:grid-cols-4">
+          {metrics.map(([v, l], i) => (
+            <div key={l} className={`px-5 py-6 md:px-7 md:py-8 ${i % 2 ? "border-l border-white/10" : ""} ${i > 1 ? "border-t border-white/10 md:border-t-0" : ""} ${i === 2 ? "md:border-l" : ""}`}>
+              <dt className="font-mono text-[10px] uppercase tracking-label text-white/45">{l}</dt>
+              <dd className="mt-2 font-mono text-4xl font-medium tracking-tight md:text-5xl">{v}</dd>
+            </div>))}
+        </dl>
       </section>
 
-      <div className="-mt-6 grid grid-cols-2 gap-3 px-3 sm:grid-cols-3 md:px-5">
-        {actions.map((a) => (
-          <Link key={a.t} href={a.href} className={`relative flex items-center justify-between rounded-2xl p-4 shadow-card ${a.primary ? "col-span-2 sm:col-span-1" : ""} ${a.primary ? "bg-gradient-to-br from-gold to-amber-300 text-slate-900" : "bg-white text-slate-900"}`}>
-            <div><p className="font-bold">{a.t}</p><p className="text-sm opacity-70">{a.d}</p></div><span aria-hidden className="text-xl">›</span>
-          </Link>))}
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <section aria-label="À traiter" className="lg:col-span-2">
+          <h2 className="eyebrow">À traiter</h2>
+          <div className="card mt-3 divide-y divide-line overflow-hidden">
+            {todo ? tiles : <Tile variant="row" tone="vert" label="À jour" title="Rien à faire pour le moment" />}
+          </div>
+        </section>
+        <aside>
+          <h2 className="eyebrow">Raccourcis</h2>
+          <div className="card mt-3 divide-y divide-line">
+            {[
+              ["/salaries/nouveau", "Créer un salarié", "Contrat, fiche horaire, checklist DPAE"],
+              ["/echeances", "Ajouter une échéance", "Rappel à la bonne date"],
+              ["/documents", "Journal de validation", "Qui a validé quoi, et quand"],
+              ["/cours/chapitre-1", "Mon cours", "Chapitre 1 · Embaucher sans oubli"],
+            ].map(([h, t, d]) => (
+              <Link key={h + t} href={h} className="group flex items-center justify-between px-5 py-4 hover:bg-[#faf9f6]">
+                <div><p className="font-medium">{t}</p><p className="text-sm text-zinc-500">{d}</p></div>
+                <span aria-hidden className="text-zinc-600 transition-transform group-hover:translate-x-0.5">→</span>
+              </Link>))}
+          </div>
+        </aside>
       </div>
-
-      <div className="mt-5 grid grid-cols-3 gap-3">
-        {[[emps, "Salarié" + (emps > 1 ? "s" : "")], [toReview, "À relire"], [open, "Échéances ouvertes"]].map(([v, l]) => (
-          <div key={String(l)} className="card p-4"><p className="text-3xl font-bold">{v}</p><p className="text-sm text-slate-500">{l}</p></div>))}
-      </div>
-
-      <section aria-label="À traiter" className="card mt-5 space-y-3 p-4 md:p-5">
-        <h2 className="text-lg font-bold">À traiter aujourd&apos;hui</h2>
-        {tiles.length ? tiles : <Tile tone="vert" label="Tout est à jour" title="Aucune échéance proche, rien à relire" />}
-      </section>
-
-      <Link href="/cours/chapitre-1" className="card mt-5 flex items-center justify-between p-5"><div><p className="font-bold">Mon cours</p><p className="text-sm text-slate-500">Chapitre 1 · Embaucher sans oublier la paperasse</p></div><span aria-hidden className="text-xl text-slate-400">›</span></Link>
     </main>
   );
 }

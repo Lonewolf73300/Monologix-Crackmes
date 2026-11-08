@@ -4,7 +4,7 @@ import { login } from "../actions";
 export default function Page() {
   return (
     <main className="mx-auto max-w-md px-5 pb-10">
-      <h1 className="text-3xl font-bold">Connexion</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Connexion</h1>
       <div className="mt-6"><Form action={login} submit="Me connecter">
         <Field label="Email" name="email" type="email" required autoComplete="email" />
         <Field label="Mot de passe" name="password" type="password" required autoComplete="current-password" />

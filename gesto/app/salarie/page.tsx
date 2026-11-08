@@ -3,8 +3,8 @@ import { extras } from "@/lib/flags";
 import { currentUser } from "@/lib/auth";
 import { db, decrypt } from "@/lib/db";
 import { logout, punch } from "../actions";
-import { Tile } from "../tile";
-import { Avatar, Hero, Logo, Toque } from "../brand";
+import { Contours, Logo } from "../brand";
+import Clock from "./Clock";
 import type { Emp } from "@/lib/documents";
 
 export const dynamic = "force-dynamic";
@@ -21,35 +21,45 @@ export default async function Page() {
   const faq = JSON.parse(co.faq) as { q: string; a: string }[];
   const hhmm = last ? new Date(last.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: TZ }) : "";
   const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: TZ });
-  // Une action principale selon la situation.
+  // Une seule action principale selon la situation.
   const state = !last || last.kind === "part" ? "hors" : last.kind === "pause" ? "pause" : "service";
   const main = state === "hors" ? { kind: "arrive", label: "J'arrive" } : state === "pause" ? { kind: "reprise", label: "Reprendre" } : { kind: "part", label: "Je pars" };
+  const status = state === "service" ? { dot: "bg-[#4ade80]", text: `En service · Arrivé à ${hhmm}` } : state === "pause" ? { dot: "bg-[#fbbf24]", text: `En pause depuis ${hhmm}` } : { dot: "bg-white/40", text: last ? `Hors service · Parti à ${hhmm}` : "Pas encore pointé aujourd'hui" };
+
   return (
-    <main className="mx-auto max-w-md pb-6 md:max-w-xl">
-      <section className="relative h-56 overflow-hidden md:rounded-3xl">
-        <Hero className="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-transparent" />
-        <div className="relative flex items-start justify-between p-5 text-white">
-          <div><Logo light /><p className="mt-1 text-sm text-white/85">{co.name}</p></div>
-          <form action={logout}><button className="text-sm text-white/85 underline">Quitter</button></form>
+    <main className="mx-auto min-h-screen max-w-md bg-ink md:my-8 md:min-h-0 md:overflow-hidden md:rounded-2xl md:border md:border-line">
+      <section className="relative overflow-hidden bg-night px-6 pb-10 pt-6 text-white">
+        <Contours className="absolute inset-0 h-full w-full" cx={560} cy={60} />
+        <div className="relative flex items-center justify-between">
+          <Logo light />
+          <form action={logout}><button className="text-sm text-white/55 hover:text-white">Quitter</button></form>
+        </div>
+        <div className="relative mt-10">
+          <p className="font-mono text-[11px] uppercase tracking-label text-white/45 first-letter:uppercase">{today} · {co.name}</p>
+          <p className="mt-3 text-[84px] font-semibold leading-none tracking-[-0.05em]"><Clock /></p>
+          <p className="mt-4 text-lg">Bonjour {e.name.split(" ")[0]}, <span className="text-white/55">{e.post}</span></p>
+          <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/[.08] px-3 py-1.5 text-sm"><span className={`h-2 w-2 rounded-full ${status.dot}`} />{status.text}</p>
         </div>
       </section>
-      <section className="relative -mt-8 space-y-4 rounded-t-3xl bg-ink px-5 pb-4 pt-6">
-        <div className="flex items-center gap-4">
-          <Avatar name={e.name} size={56} />
-          <div><h1 className="text-3xl font-bold">Bonjour {e.name.split(" ")[0]} 👋</h1><p className="text-slate-500 first-letter:uppercase">{today}</p></div>
-        </div>
-        <div className="card flex items-center gap-4 p-4"><span aria-hidden className="flex h-11 w-11 items-center justify-center rounded-full bg-green-100 text-green-700"><Toque className="h-6 w-6" /></span><div><p className="text-sm text-slate-500">Poste</p><p className="text-lg font-bold">{e.post}</p></div></div>
-        <Tile tone="bleu" label="Consigne du jour" title={co.consigne || "Pas de consigne aujourd'hui"} />
-        {state === "service" && <Tile tone="vert" label="En service" title={`Arrivé à ${hhmm}`} />}
-        {state === "pause" && <Tile tone="orange" label="En pause" title={`Depuis ${hhmm}`} />}
-        {state === "hors" && <Tile tone="bleu" label="Pointage" title={last ? `Parti à ${hhmm}` : "Pas encore pointé"} />}
-        <form action={punch} className="space-y-3">
-          <button name="kind" value={main.kind} className="w-full rounded-2xl bg-gradient-to-b from-green-500 to-green-700 px-6 py-5 text-2xl font-bold text-white shadow-card">{main.label}</button>
-          {state === "service" && <button name="kind" value="pause" className="w-full rounded-2xl border border-line bg-white px-6 py-4 text-lg font-semibold shadow-card">Pause</button>}
-          <p className="text-xs text-slate-500">Pointage par simple bouton, sans géolocalisation.</p>
+
+      <section className="space-y-6 px-6 py-6">
+        <form action={punch} className="space-y-2.5">
+          <button name="kind" value={main.kind} className="w-full rounded-lg bg-accent py-5 text-xl font-semibold text-white shadow-lift transition-colors hover:bg-[#184a37]">{main.label}</button>
+          {state === "service" && <button name="kind" value="pause" className="btn-ghost w-full py-3.5">Pause</button>}
+          <p className="text-center text-xs text-zinc-500">Pointage par simple bouton, sans géolocalisation.</p>
         </form>
-        {faq.length > 0 && <div className="space-y-2"><h2 className="font-bold">Questions fréquentes</h2>{faq.map((x, i) => <details key={i} className="card p-4"><summary className="cursor-pointer font-medium">{x.q}</summary><p className="mt-2 text-sm text-slate-600">{x.a}</p></details>)}</div>}
+
+        <div>
+          <h2 className="eyebrow">Consigne du jour</h2>
+          <blockquote className="mt-2 border-l-2 border-accent pl-4 text-lg leading-snug">{co.consigne || <span className="text-zinc-500">Pas de consigne aujourd&apos;hui.</span>}</blockquote>
+        </div>
+
+        {faq.length > 0 && (
+          <div>
+            <h2 className="eyebrow">Questions fréquentes</h2>
+            <div className="card mt-2 divide-y divide-line">{faq.map((x, i) => (
+              <details key={i} className="group px-4 py-3.5"><summary className="flex cursor-pointer list-none items-center justify-between font-medium">{x.q}<span aria-hidden className="text-zinc-500 transition-transform group-open:rotate-45">+</span></summary><p className="mt-2 text-sm text-zinc-400">{x.a}</p></details>))}</div>
+          </div>)}
       </section>
     </main>
   );

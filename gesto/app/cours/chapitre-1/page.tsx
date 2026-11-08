@@ -13,15 +13,15 @@ export default function Page() {
   return (
     <main className="mx-auto max-w-2xl px-5 pb-10">
       <p className="text-sm text-accent">Chapitre 1 · gratuit · sans carte bancaire</p>
-      <h1 className="mt-1 text-3xl font-bold">Embaucher sans oublier la paperasse</h1>
+      <h1 className="mt-1 text-3xl font-semibold tracking-tight">Embaucher sans oublier la paperasse</h1>
       <p className="mt-3 text-zinc-300">Six réflexes à avoir pour chaque nouveau salarié. Simple, dans l&apos;ordre, et utile même sans Gesto.</p>
       <ol className="mt-8 space-y-4">{steps.map(([t, d], i) => (
         <li key={t} className="card p-5"><h2 className="font-semibold"><span className="mr-2 text-accent">{i + 1}.</span>{t}</h2><p className="mt-2 text-sm text-zinc-400">{d}</p></li>))}</ol>
       <p className="mt-4 text-xs text-zinc-500">Contenu pédagogique général, à vérifier selon ta convention collective. Ce n&apos;est pas un conseil juridique.</p>
       <aside className="mt-8 rounded-2xl border border-accent/40 bg-panel p-6">
-        <h2 className="text-xl font-bold">Ce que je viens de t&apos;apprendre, Gesto peut le faire pour toi</h2>
+        <h2 className="text-xl font-semibold">Ce que je viens de t&apos;apprendre, Gesto peut le faire pour toi</h2>
         <p className="mt-2 text-sm text-zinc-400">Gesto prépare le contrat, la fiche horaire et la checklist DPAE en 30 secondes, tu relis et valides, et il te rappelle tes échéances. Gesto ne déclare rien à ta place.</p>
-        <Link href="/inscription" className="mt-4 inline-block rounded-xl bg-accent px-5 py-3 font-semibold text-white">Créer mon compte</Link>
+        <Link href="/inscription" className="mt-4 inline-block rounded-lg bg-accent px-5 py-3 font-semibold text-white">Créer mon compte</Link>
       </aside>
     </main>
   );

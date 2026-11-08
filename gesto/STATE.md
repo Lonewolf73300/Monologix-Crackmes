@@ -68,3 +68,9 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 - Thème clair : fond gris doux, cartes blanches ombrées, action principale verte, accent or, barre latérale sombre (desktop) et onglets blancs à icônes (mobile). Remplace le thème sombre/orange du prompt d'origine (décision de Lou : « sois plus comme la photo »).
 - Bannière montagne/chalet = illustration SVG maison (`app/brand.tsx`), logo toque SVG, avatars = initiales. Aucune photo de stock. Une vraie photo pourra être ajoutée plus tard (ex. générée via Canva).
 - Toujours sans données inventées : chiffres et tuiles viennent de la base. Cloche = lien vers les échéances avec le nombre d'échéances en retard ou proches.
+
+## 0.6.0 — Design pro (remplace 0.5.0 jugé « trop gamin »)
+- Direction : éditoriale et sobre. Papier chaud #f6f5f1, encre #141414, filets fins, un seul accent vert alpin #1f5a43, laiton #b08a4a en touche. Polices Geist Sans / Geist Mono (paquet `geist`, embarqué, sans réseau au build).
+- Plus d'illustration ni d'emoji : motif de courbes de niveau généré (`Contours`, `app/brand.tsx`) pour l'identité montagne ; logo = carré vert + coche (« document validé ») + mot « gesto ».
+- Patron « Aujourd'hui » : titre-phrase (« 4 points à traiter aujourd'hui »), bande sombre de chiffres (salariés, à relire, échéances ouvertes, J-x), liste « À traiter » à barres de statut, raccourcis. Barre latérale sombre, compte + déconnexion en bas.
+- Salarié : écran pointeuse — grande horloge en direct (heure de Paris), statut, un seul bouton, consigne en citation, FAQ. Pas de barre d'onglets (un seul écran).

@@ -16,3 +16,6 @@
 
 ## 0.5.0
 - Refonte visuelle claire (vert/or), bannière SVG, nouvelle navigation, accueil patron et salarié refaits, accueil public avec bannière.
+
+## 0.6.0
+- Refonte design pro : Geist, palette papier/encre/vert alpin, courbes de niveau, tableau « Aujourd'hui », pointeuse salarié, accueil éditorial.

@@ -30,7 +30,7 @@ export default function PushButton() {
     setState("inactif");
   }
   return (
-    <div className="mt-4 rounded-xl border border-line bg-panel p-4 text-sm">
+    <div className="mt-4 rounded-lg border border-line bg-panel p-4 text-sm">
       {state === "actif" && <p className="text-green-700">Notifications système activées sur cet appareil. <button onClick={disable} className="ml-2 underline text-zinc-400">Désactiver</button></p>}
       {state === "inactif" && <button onClick={enable} className="rounded-lg bg-accent px-4 py-2 font-semibold text-white">Activer les rappels sur cet appareil</button>}
       {state === "refuse" && <p className="text-red-700">Notifications refusées : autorise-les dans les réglages du navigateur.</p>}
