@@ -47,6 +47,9 @@ const ok = (c, m) => { if (!c) { console.error("ÉCHEC:", m); process.exit(1); }
     ok(j2.envoyes === 0, "pas de doublon de rappel");
   } else ok(rap.status() === 200 && j.non_envoyes === 1 && j.envoyes === 0, "sans clé push : rappel marqué non envoyé (jamais faussement envoyé) " + JSON.stringify(j));
   ok((await p.request.get(B + "/api/rappels")).status() === 401, "rappels protégés");
+  ok((await p.request.get(B + "/api/sante")).status() === 401, "contrôle de configuration protégé");
+  const sante = await (await p.request.get(B + "/api/sante", { headers: { authorization: "Bearer testsecret" } })).json();
+  ok(sante.checks.base_postgres === true && sante.pret_pour_rappels === true && sante.checks.paiement_stripe === false && !JSON.stringify(sante).includes("testsecret"), "contrôle de configuration : prêt pour rappels, paiement coupé, aucun secret exposé");
   if (process.env.GESTO_EXTRAS !== "1") { ok((await p.request.get(B + "/offres")).status() === 404 && (await p.request.get(B + "/salarie")).status() === 404, "extras masqués par défaut"); await br.close(); console.log("TOUS LES TESTS PASSENT (cœur V1)"); return; }
   await p.goto(B + "/salaries"); const code = (await p.locator("span.font-mono").innerText()).trim();
   await p.fill("[name=consigne]", "Ouverture 11h30"); await p.click("button:has-text('Enregistrer')"); await p.waitForLoadState("networkidle"); await p.waitForTimeout(500);

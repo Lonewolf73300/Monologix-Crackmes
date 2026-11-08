@@ -51,3 +51,9 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 - Production : `GESTO_DATA_KEY` et `GESTO_SESSION_SECRET` obligatoires (l'app refuse de démarrer sans, plus de clé par défaut).
 - Auth maison (mot de passe scrypt + cookie signé) sur la table `users` ; Supabase Auth non utilisé (décision : moins de pièces). Pas de RLS Supabase : l'accès passe uniquement par le serveur Next.js avec la connexion Postgres — ne jamais exposer la clé `anon` ni ouvrir l'API REST Supabase sur ces tables.
 - NON TESTÉ sur un vrai projet Supabase (pas d'accès ici) : SSL/pooler. À valider au premier déploiement.
+
+## Mise en ligne (préparé, non exécuté)
+- `vercel.json` : appel quotidien (07:00 UTC) de `/api/rappels` ; Vercel envoie automatiquement `Authorization: Bearer $CRON_SECRET`. Note : le plan gratuit Vercel limite les crons à 1 par jour, c'est suffisant (rappels datés au jour).
+- `GET /api/sante` (Bearer CRON_SECRET) : `pret_pour_rappels` + oui/non par réglage (base, clé chiffrement, secret session, VAPID, Resend, Stripe). À appeler après chaque déploiement.
+- Variables à renseigner sur Vercel : DATABASE_URL, GESTO_DATA_KEY, GESTO_SESSION_SECRET, CRON_SECRET, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (Resend et Stripe : plus tard).
+- Reste hors de mon accès : projet Supabase, compte Vercel, téléphone, SIREN, textes légaux.
