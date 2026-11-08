@@ -22,3 +22,6 @@
 
 ## 0.7.0
 - Design calqué sur les maquettes (cartes blanches, vert/or, pastilles d'icônes, priorité, coup d'œil, pointeuse salarié), emplacement pour une vraie photo de bannière.
+
+## 0.8.0
+- Reproduction des 3 maquettes (patron mobile, patron ordinateur, salarié) sur données réelles ; prénom ; photos par commerce ; page Paramètres ; Mode Focus.

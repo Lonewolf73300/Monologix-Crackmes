@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS errors(id SERIAL PRIMARY KEY, at TEXT NOT NULL, scope
 CREATE INDEX IF NOT EXISTS idx_employees_company ON employees(company_id);
 CREATE INDEX IF NOT EXISTS idx_documents_company ON documents(company_id);
 CREATE INDEX IF NOT EXISTS idx_deadlines_company ON deadlines(company_id, done, due);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT;
+CREATE TABLE IF NOT EXISTS company_media(company_id INTEGER NOT NULL, kind TEXT NOT NULL, mime TEXT NOT NULL, data BYTEA NOT NULL, updated TEXT NOT NULL, PRIMARY KEY(company_id, kind));
 `;
 
 const g = globalThis as unknown as { __pool?: Pool; __ready?: Promise<void> };

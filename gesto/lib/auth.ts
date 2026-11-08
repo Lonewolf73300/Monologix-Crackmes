@@ -27,7 +27,7 @@ export async function startSession(userId: number) {
 }
 export async function endSession() { (await cookies()).delete("gesto_session"); }
 
-export type User = { id: number; email: string; role: string; company_id: number | null };
+export type User = { id: number; email: string; role: string; company_id: number | null; first_name: string | null };
 export async function currentUser(): Promise<User | null> {
   const c = (await cookies()).get("gesto_session")?.value;
   if (!c) return null;
@@ -35,7 +35,7 @@ export async function currentUser(): Promise<User | null> {
   const expected = sign(`${id}.${exp}`);
   if (!sig || sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
   if (Number(exp) < Date.now()) return null;
-  return (await db.prepare("SELECT id,email,role,company_id FROM users WHERE id=?").get(Number(id)) as User) ?? null;
+  return (await db.prepare("SELECT id,email,role,company_id,first_name FROM users WHERE id=?").get(Number(id)) as User) ?? null;
 }
 export async function requirePatron(): Promise<User & { company_id: number }> {
   const u = await currentUser();

@@ -1,10 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-
-// Bannière : la vraie photo de l'établissement si `public/banniere.jpg` existe, sinon une scène « montagne au crépuscule ».
-const hasPhoto = () => { try { return fs.existsSync(path.join(process.cwd(), "public", "banniere.jpg")); } catch { return false; } };
-export function Banner({ className = "" }: { className?: string }) {
-  if (hasPhoto()) return <img src="/banniere.jpg" alt="" className={`${className} object-cover`} />;
+// Bannière : la photo envoyée par le commerce (Paramètres), sinon une scène « montagne au crépuscule ».
+export function Banner({ className = "", src }: { className?: string; src?: string | null }) {
+  if (src) return <img src={src} alt="" className={`${className} object-cover`} />;
   const lights = [[700, 352], [716, 348], [731, 356], [748, 350], [762, 357], [690, 361], [779, 362], [805, 358], [822, 364], [660, 368], [842, 370]];
   return (
     <svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden>

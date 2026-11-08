@@ -6,7 +6,7 @@ const ok = (c, m) => { if (!c) { console.error("ÉCHEC:", m); process.exit(1); }
   const br = await chromium.launch(); const fsx = require("fs"); const p = await (await br.newContext({ acceptDownloads: true })).newPage();
   const email = `patron${Date.now()}@test.fr`;
   await p.goto(B + "/inscription");
-  await p.fill("[name=email]", email); await p.fill("[name=password]", "motdepasse1");
+  await p.fill("[name=first_name]", "Lou"); await p.fill("[name=email]", email); await p.fill("[name=password]", "motdepasse1");
   await p.click("[name=cgv]"); await p.click("button:has-text('Créer mon compte')");
   await p.waitForURL("**/diagnostic"); ok(true, "inscription");
   await p.fill("input[placeholder='Nom du commerce']", "Le Chamois"); await p.click("text=Continuer");
@@ -21,6 +21,14 @@ const ok = (c, m) => { if (!c) { console.error("ÉCHEC:", m); process.exit(1); }
   await p.waitForURL("**/documents"); ok((await p.locator("text=J'ai relu, je valide").count()) === 2 && (await p.locator("text=Validation bloquée").count()) === 1, "3 documents générés : 2 à relire, contrat bloqué (infos manquantes)");
   await p.goto(B + "/tableau-de-bord");
   ok(await p.locator("text=Contrat bloqué").isVisible() && await p.locator("text=DPAE de Léa Martin à déclarer").isVisible() && await p.locator("text=3 documents en attente de validation").isVisible(), "tableau de bord : contrat bloqué (rouge), échéance DPAE et documents à relire (orange), données réelles");
+  ok(await p.locator("h1:visible", { hasText: "Bonjour Lou" }).count() === 1, "prénom affiché (« Bonjour Lou »)");
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "base64");
+  const up = await p.request.post(B + "/api/media/profil", { multipart: { photo: { name: "profil.png", mimeType: "image/png", buffer: png } } });
+  const got = await p.request.get(B + "/api/media/profil");
+  ok(up.ok() && got.status() === 200 && got.headers()["content-type"] === "image/png", "photo de profil envoyée puis relue");
+  const bad = await p.request.post(B + "/api/media/banniere", { multipart: { photo: { name: "x.txt", mimeType: "text/plain", buffer: Buffer.from("x") } } });
+  const anonCtx = await br.newContext(); const anon = await anonCtx.request.get(B + "/api/media/profil"); await anonCtx.close();
+  ok(bad.status() === 415 && anon.status() === 401, "photo : mauvais format refusé, lecture refusée sans connexion");
   await p.goto(B + "/documents");
   const r = await p.request.get(B + "/api/documents/3"); ok(r.status() === 403, "téléchargement refusé avant validation");
   ok(await p.locator("text=Informations manquantes").isVisible() && (await p.locator("text=Validation bloquée").count()) === 1, "alerte infos manquantes + validation du contrat bloquée");

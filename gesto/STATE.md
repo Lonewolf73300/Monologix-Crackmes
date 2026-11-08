@@ -80,3 +80,11 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 - Patron : bannière + « Bonjour », 3 raccourcis (Nouveau salarié en or), carte « priorité » (la chose la plus urgente, un bouton), « En un coup d'œil » (prochaine échéance J-x, salariés, à relire, urgents), « Ensuite », « Derniers documents » (relire / valider en un clic), panneau sombre « Mon cours ». Toutes les données sont réelles.
 - Salarié : bannière, « Bonjour {prénom} · Prêt pour le service ? », 3 tuiles (date, heure en direct, pointage), poste, consigne, gros bouton vert unique, FAQ.
 - Bannière : `app/banner.tsx`. Si `public/banniere.jpg` existe (vraie photo du Chamois), elle remplace automatiquement la scène dessinée.
+
+## 0.8.0 — Maquettes de Lou reproduites à l'identique (données réelles uniquement)
+- Patron mobile = maquette 1 : logo, cloche (échéances), menu profil (Paramètres, déconnexion), « Bonjour {prénom} 👋 » + photo, carte décision (priorité n°1, 2 vrais boutons), Gesto Now (prochaine échéance, équipe, à relire, urgents, rappels), Mode Focus (interrupteur réel : 3 priorités / tout), onglets à pastille bleue.
+- Patron ordinateur = maquette 3 : barre latérale « Gesto MANAGEMENT » dorée, bannière photo, 3 cartes d'action (Embaucher en or), chiffres (+n cette semaine), derniers documents (aperçu / valider en un clic), panneau sombre or « Mon cours ».
+- Salarié = maquette 2 (bannière = photo du commerce, 👋, prise de poste).
+- Nouveau : prénom (inscription + Paramètres, colonne `users.first_name`) ; photos par commerce (`company_media`, route `/api/media/[kind]`, JPEG/PNG/WebP ≤ 3 Mo, lecture réservée au commerce) ; page `/parametres`.
+- Retiré des maquettes car non construit : météo, planning, recrutement / candidatures, remplacements, « Qui contacter », abonnement Pro.
+- Tests : 30 vérifications (dont prénom, envoi photo, format refusé, accès sans connexion refusé) + persistance.

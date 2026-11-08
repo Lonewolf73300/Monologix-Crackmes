@@ -7,6 +7,7 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Nav from "./nav";
 import { Logo } from "./brand";
+import { mediaUrls } from "@/lib/media";
 
 export const metadata: Metadata = {
   title: "Gesto — Ta paperasse, c'est fini.",
@@ -19,11 +20,12 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser().catch(() => null);
   const patron = user?.role === "patron" && user.company_id ? user : null;
-  const company = patron ? ((await db.prepare("SELECT name FROM companies WHERE id=?").get(patron.company_id).catch(() => null)) as { name: string } | null)?.name ?? "" : "";
+  const co = patron ? ((await db.prepare("SELECT name,type FROM companies WHERE id=?").get(patron.company_id).catch(() => null)) as { name: string; type: string } | null) : null;
+  const media = patron ? await mediaUrls(patron.company_id!).catch(() => null) : null;
   return (
     <html lang="fr" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="min-h-screen font-sans">
-        {patron && <Nav company={company} email={patron.email} />}
+        {patron && <Nav company={co?.name ?? ""} type={co?.type ?? ""} banner={media?.banniere} />}
         {!user && (
           <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
             <Link href="/"><Logo /></Link>
@@ -32,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/connexion" className="font-medium hover:underline">Connexion</Link>
             </nav>
           </header>)}
-        <div className={patron ? "pb-28 lg:pb-0 lg:pl-64" : ""}>
+        <div className={patron ? "pb-28 lg:pb-0 lg:pl-[300px]" : ""}>
           {children}
           <footer className={`mx-auto max-w-5xl px-5 py-10 text-xs text-zinc-500 ${user?.role === "salarie" ? "hidden" : ""}`}>
             Gesto prépare, rappelle et organise. Gesto ne déclare rien à ta place et ne remplace ni un avocat, ni un expert-comptable.{" "}

@@ -16,8 +16,9 @@ export async function signup(_: unknown, f: FormData) {
   if (pw.length < 8) return { error: "Mot de passe : 8 caractères minimum." };
   if (!f.get("cgv")) return { error: "Tu dois accepter les conditions d'utilisation." };
   if (await db.prepare("SELECT 1 FROM users WHERE email=?").get(email)) return { error: "Un compte existe déjà avec cet email." };
-  const r = await db.prepare("INSERT INTO users(email,hash,consent_cgv,consent_stats,created) VALUES(?,?,1,?,?)")
-    .run(email, hashPassword(pw), f.get("stats") ? 1 : 0, now());
+  const first = s(f, "first_name").slice(0, 40) || null;
+  const r = await db.prepare("INSERT INTO users(email,hash,first_name,consent_cgv,consent_stats,created) VALUES(?,?,?,1,?,?)")
+    .run(email, hashPassword(pw), first, f.get("stats") ? 1 : 0, now());
   await startSession(Number(r.lastInsertRowid));
   redirect("/diagnostic");
 }
@@ -72,6 +73,7 @@ export async function validateDoc(f: FormData) {
   await db.prepare("UPDATE documents SET status='valide', validated_at=? WHERE id=?").run(now(), id);
   await db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, `Document validé : ${d.kind}`, id, d.version);
   revalidatePath("/documents");
+  revalidatePath("/tableau-de-bord");
 }
 
 export async function addDeadline(_: unknown, f: FormData) {
@@ -87,6 +89,7 @@ export async function toggleDeadline(f: FormData) {
   const u = await requirePatron();
   await db.prepare("UPDATE deadlines SET done=1-done WHERE id=? AND company_id=?").run(Number(f.get("id")), u.company_id);
   revalidatePath("/echeances");
+  revalidatePath("/tableau-de-bord");
 }
 
 export async function saveConsigne(f: FormData) {
@@ -139,4 +142,13 @@ export async function completeContract(f: FormData) {
   await db.prepare("UPDATE documents SET version=version+1, status='a_relire', validated_at=NULL WHERE id=?").run(c.id);
   await db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, "Contrat complété, à revalider", c.id, c.version + 1);
   revalidatePath("/documents");
+  revalidatePath("/tableau-de-bord");
+}
+
+export async function saveFirstName(_: unknown, f: FormData) {
+  const u = await currentUser();
+  if (!u) redirect("/connexion");
+  await db.prepare("UPDATE users SET first_name=? WHERE id=?").run(s(f, "first_name").slice(0, 40) || null, u.id);
+  revalidatePath("/", "layout");
+  return { ok: true };
 }

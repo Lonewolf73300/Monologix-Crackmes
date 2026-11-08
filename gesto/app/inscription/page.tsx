@@ -7,6 +7,7 @@ export default function Page() {
     <main className="mx-auto max-w-md px-5 pb-10">
       <h1 className="text-3xl font-semibold tracking-tight">Créer mon compte</h1>
       <div className="mt-6"><Form action={signup} submit="Créer mon compte">
+        <Field label="Ton prénom (facultatif)" name="first_name" autoComplete="given-name" maxLength={40} />
         <Field label="Email" name="email" type="email" required autoComplete="email" />
         <Field label="Mot de passe (8 caractères min.)" name="password" type="password" required minLength={8} autoComplete="new-password" />
         <label className="flex gap-3 text-sm text-zinc-300"><input type="checkbox" name="cgv" /> J&apos;accepte les <Link href="/mentions-legales" className="underline">conditions d&apos;utilisation</Link> (textes définitifs en cours de relecture juridique).</label>
