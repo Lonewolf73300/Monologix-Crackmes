@@ -13,3 +13,6 @@
 
 ## 0.4.0
 - Habillage patron/salarié (tuiles de statut, navigation, « À traiter » sur données réelles), heures en Europe/Paris, test du tableau de bord.
+
+## 0.5.0
+- Refonte visuelle claire (vert/or), bannière SVG, nouvelle navigation, accueil patron et salarié refaits, accueil public avec bannière.

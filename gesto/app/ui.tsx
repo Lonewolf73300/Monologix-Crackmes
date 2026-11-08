@@ -6,9 +6,9 @@ export function Form({ action, children, submit }: { action: (s: unknown, f: For
   return (
     <form action={fn} className="space-y-4">
       {children}
-      {st?.error && <p role="alert" className="rounded-lg bg-red-950 p-3 text-sm text-red-300">{st.error}</p>}
-      {st?.ok && <p className="rounded-lg bg-green-950 p-3 text-sm text-green-300">Enregistré.</p>}
-      <button disabled={pending} className="w-full rounded-xl bg-accent px-6 py-4 text-lg font-semibold text-black disabled:opacity-50">{pending ? "…" : submit}</button>
+      {st?.error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{st.error}</p>}
+      {st?.ok && <p className="rounded-lg bg-green-50 p-3 text-sm text-green-700">Enregistré.</p>}
+      <button disabled={pending} className="w-full rounded-xl bg-accent px-6 py-4 text-lg font-semibold text-white disabled:opacity-50">{pending ? "…" : submit}</button>
     </form>
   );
 }

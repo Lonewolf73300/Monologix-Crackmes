@@ -17,13 +17,13 @@ export default async function Page() {
       <h1 className="text-3xl font-bold">Choisir mon offre</h1>
       {!configured && <p className="mt-4 rounded-xl border border-line bg-panel p-4 text-sm text-zinc-400">Le paiement n&apos;est pas encore ouvert. Tu peux lire le chapitre 1 gratuitement.</p>}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">{offers.map((o) => (
-        <form key={o.id} action="/api/checkout" method="post" className="rounded-2xl border border-line bg-panel p-6">
+        <form key={o.id} action="/api/checkout" method="post" className="card p-6">
           <input type="hidden" name="offer" value={o.id} />
           <p className="text-sm text-accent">{o.t}</p><p className="mt-1 text-2xl font-bold">{o.p}</p><p className="mt-2 text-sm text-zinc-400">{o.d}</p>
           {configured && (u ? <>
             <label className="mt-4 flex gap-2 text-xs text-zinc-400"><input type="checkbox" name="accept" required /> J&apos;accepte les <Link href="/mentions-legales" className="underline">conditions</Link>, le prix et la date de prélèvement affichés, et mon droit de rétractation.</label>
-            <button className="mt-3 w-full rounded-xl bg-accent px-5 py-3 font-semibold text-black">Payer</button></>
-            : <Link href="/inscription" className="mt-4 block rounded-xl bg-accent px-5 py-3 text-center font-semibold text-black">Créer un compte pour continuer</Link>)}
+            <button className="mt-3 w-full rounded-xl bg-accent px-5 py-3 font-semibold text-white">Payer</button></>
+            : <Link href="/inscription" className="mt-4 block rounded-xl bg-accent px-5 py-3 text-center font-semibold text-white">Créer un compte pour continuer</Link>)}
         </form>))}</div>
     </main>
   );

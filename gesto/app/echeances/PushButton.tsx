@@ -31,12 +31,12 @@ export default function PushButton() {
   }
   return (
     <div className="mt-4 rounded-xl border border-line bg-panel p-4 text-sm">
-      {state === "actif" && <p className="text-green-400">Notifications système activées sur cet appareil. <button onClick={disable} className="ml-2 underline text-zinc-400">Désactiver</button></p>}
-      {state === "inactif" && <button onClick={enable} className="rounded-lg bg-accent px-4 py-2 font-semibold text-black">Activer les rappels sur cet appareil</button>}
-      {state === "refuse" && <p className="text-red-300">Notifications refusées : autorise-les dans les réglages du navigateur.</p>}
+      {state === "actif" && <p className="text-green-700">Notifications système activées sur cet appareil. <button onClick={disable} className="ml-2 underline text-zinc-400">Désactiver</button></p>}
+      {state === "inactif" && <button onClick={enable} className="rounded-lg bg-accent px-4 py-2 font-semibold text-white">Activer les rappels sur cet appareil</button>}
+      {state === "refuse" && <p className="text-red-700">Notifications refusées : autorise-les dans les réglages du navigateur.</p>}
       {state === "indisponible" && <p className="text-zinc-400">{msg}</p>}
       {state === "chargement" && <p className="text-zinc-500">…</p>}
-      {msg && state !== "indisponible" && <p className="mt-2 text-red-300">{msg}</p>}
+      {msg && state !== "indisponible" && <p className="mt-2 text-red-700">{msg}</p>}
     </div>
   );
 }

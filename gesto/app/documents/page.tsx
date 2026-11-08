@@ -17,16 +17,16 @@ export default async function Page() {
           <div><p className="font-semibold">{KIND_LABEL[r.kind]} — {decrypt<Emp>(r.enc).name}</p><p className="text-sm text-zinc-400">v{r.version} · {r.status === "valide" ? `validé le ${new Date(r.validated_at!).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}` : "à relire"}</p></div>
           <div className="flex gap-2">
             <a href={`/api/documents/${r.id}?apercu=1`} className="rounded-lg border border-line px-3 py-2 text-sm">Relire</a>
-            {r.status === "valide" ? <a href={`/api/documents/${r.id}`} className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-black">Télécharger</a>
-              : miss.length ? <span className="rounded-lg border border-red-500 px-3 py-2 text-sm text-red-300">Validation bloquée</span>
-              : <form action={validateDoc}><input type="hidden" name="id" value={r.id} /><button className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-black">J&apos;ai relu, je valide</button></form>}
+            {r.status === "valide" ? <a href={`/api/documents/${r.id}`} className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white">Télécharger</a>
+              : miss.length ? <span className="rounded-lg border border-red-500 px-3 py-2 text-sm text-red-700">Validation bloquée</span>
+              : <form action={validateDoc}><input type="hidden" name="id" value={r.id} /><button className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white">J&apos;ai relu, je valide</button></form>}
           </div></div>
           {miss.length > 0 && (
-            <form action={completeContract} className="mt-4 space-y-3 rounded-lg border border-red-500/60 bg-red-950/40 p-4">
-              <p role="alert" className="text-sm font-semibold text-red-300">Informations manquantes : {miss.map((m) => m.label).join(" · ")}</p>
+            <form action={completeContract} className="mt-4 space-y-3 rounded-lg border border-red-500/60 bg-red-50 p-4">
+              <p role="alert" className="text-sm font-semibold text-red-700">Informations manquantes : {miss.map((m) => m.label).join(" · ")}</p>
               <input type="hidden" name="employee_id" value={r.employee_id} />
               {miss.map((m) => <label key={m.key} className="block text-sm text-zinc-300">{m.label}<input name={m.key} required className="mt-1 w-full rounded-xl border border-line bg-panel px-4 py-3" /></label>)}
-              <button className="rounded-lg bg-accent px-4 py-2 font-semibold text-black">Compléter le contrat</button>
+              <button className="rounded-lg bg-accent px-4 py-2 font-semibold text-white">Compléter le contrat</button>
             </form>)}
         </li>); })}
         {!rows.length && <li className="text-zinc-500">Aucun document. Crée un salarié pour en générer.</li>}</ul>

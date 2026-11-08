@@ -63,3 +63,8 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 - Navigation : barre latérale (desktop) / onglets en bas (mobile) une fois connecté (`app/nav.tsx`).
 - Accueil patron : « À traiter aujourd'hui » alimenté par les vraies données (échéances en retard / proches, contrats bloqués, documents à relire, appareil sans notifications). Accueil salarié : une action principale selon l'état (J'arrive / Pause / Reprendre / Je pars). Heures affichées en fuseau Europe/Paris.
 - NON CONSTRUIT (présent sur les maquettes, hors V1) : Gesto Now (« service dans 42 min », prévision), Mode Focus, météo, planning, remplacements validés par un manager, recrutement / candidatures, abonnement Pro, photos de profil. Les noms et chiffres des maquettes (Paul, Chloé, 12 candidatures…) sont des exemples, jamais à afficher comme des données réelles.
+
+## 0.5.0 — Refonte visuelle alignée sur les maquettes de Lou
+- Thème clair : fond gris doux, cartes blanches ombrées, action principale verte, accent or, barre latérale sombre (desktop) et onglets blancs à icônes (mobile). Remplace le thème sombre/orange du prompt d'origine (décision de Lou : « sois plus comme la photo »).
+- Bannière montagne/chalet = illustration SVG maison (`app/brand.tsx`), logo toque SVG, avatars = initiales. Aucune photo de stock. Une vraie photo pourra être ajoutée plus tard (ex. générée via Canva).
+- Toujours sans données inventées : chiffres et tuiles viennent de la base. Cloche = lien vers les échéances avec le nombre d'échéances en retard ou proches.

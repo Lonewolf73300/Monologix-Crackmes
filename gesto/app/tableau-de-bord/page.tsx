@@ -5,6 +5,7 @@ import { pushConfigured } from "@/lib/push";
 import { missingInfo, type Emp } from "@/lib/documents";
 import { logout } from "../actions";
 import { Tile } from "../tile";
+import { Avatar, Hero } from "../brand";
 
 export default async function Page() {
   const u = await requirePatron();
@@ -29,26 +30,53 @@ export default async function Page() {
     ...(toReview ? [<Tile key="r" tone="orange" label="À relire" title={`${toReview} document${toReview > 1 ? "s" : ""} en attente de validation`} href="/documents" />] : []),
     ...(pushConfigured() && devices === 0 ? [<Tile key="p" tone="bleu" label="Information" title="Active les rappels sur ton téléphone" href="/echeances" action="Activer" />] : []),
   ];
-  const cards = [
-    { href: "/salaries", t: "Mes employés", v: `${emps} salarié${emps > 1 ? "s" : ""}` },
-    { href: "/documents", t: "Mes documents", v: toReview ? `${toReview} à relire` : "Rien en attente" },
-    { href: "/echeances", t: "Mes échéances", v: `${open} à venir` },
-    { href: "/cours/chapitre-1", t: "Mon cours", v: "Chapitre 1" },
+  const alerts = late.length + soon.length;
+  const actions = [
+    { href: "/salaries/nouveau", t: "Nouveau salarié", d: "Contrat, fiche horaire, DPAE", primary: true },
+    { href: "/documents", t: "Mes documents", d: toReview ? `${toReview} à relire` : "Rien en attente" },
+    { href: "/echeances", t: "Mes échéances", d: `${open} à venir` },
   ];
   return (
-    <main className="mx-auto max-w-3xl px-5 pb-10">
-      <div className="flex items-start justify-between">
-        <div><h1 className="text-3xl font-bold">Bonjour 👋</h1><p className="text-zinc-400">Propriétaire · {co.name}</p></div>
-        <form action={logout}><button className="text-sm text-zinc-500 underline">Déconnexion</button></form>
+    <main className="mx-auto max-w-4xl px-4 pb-10 md:px-6">
+      <section className="relative overflow-hidden rounded-3xl bg-night shadow-card">
+        <Hero className="absolute inset-0 h-full w-full" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+        <div className="relative flex min-h-[18rem] flex-col justify-between p-5 md:p-7">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3 text-white"><Avatar name={co.name} /><div><p className="text-sm text-white/80"><span className="hidden sm:inline">Propriétaire · </span>{co.name}</p></div></div>
+            <div className="flex items-center gap-4">
+              <Link href="/echeances" aria-label={`Échéances à traiter : ${alerts}`} className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-800">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0" /></svg>
+                {alerts > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-bad px-1 text-xs font-bold text-white">{alerts}</span>}
+              </Link>
+              <form action={logout}><button className="text-sm text-white/80 underline">Déconnexion</button></form>
+            </div>
+          </div>
+          <div className="text-white">
+            <h1 className="text-3xl font-bold md:text-4xl">Bonjour 👋</h1>
+            <p className="mt-1 max-w-md text-white/85">Gérez vos salariés, vos documents et vos échéances, tout en un seul endroit.</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="-mt-6 grid grid-cols-2 gap-3 px-3 sm:grid-cols-3 md:px-5">
+        {actions.map((a) => (
+          <Link key={a.t} href={a.href} className={`relative flex items-center justify-between rounded-2xl p-4 shadow-card ${a.primary ? "col-span-2 sm:col-span-1" : ""} ${a.primary ? "bg-gradient-to-br from-gold to-amber-300 text-slate-900" : "bg-white text-slate-900"}`}>
+            <div><p className="font-bold">{a.t}</p><p className="text-sm opacity-70">{a.d}</p></div><span aria-hidden className="text-xl">›</span>
+          </Link>))}
       </div>
-      <section aria-label="À traiter" className="mt-6 space-y-3">
-        <h2 className="font-semibold">À traiter aujourd&apos;hui</h2>
+
+      <div className="mt-5 grid grid-cols-3 gap-3">
+        {[[emps, "Salarié" + (emps > 1 ? "s" : "")], [toReview, "À relire"], [open, "Échéances ouvertes"]].map(([v, l]) => (
+          <div key={String(l)} className="card p-4"><p className="text-3xl font-bold">{v}</p><p className="text-sm text-slate-500">{l}</p></div>))}
+      </div>
+
+      <section aria-label="À traiter" className="card mt-5 space-y-3 p-4 md:p-5">
+        <h2 className="text-lg font-bold">À traiter aujourd&apos;hui</h2>
         {tiles.length ? tiles : <Tile tone="vert" label="Tout est à jour" title="Aucune échéance proche, rien à relire" />}
       </section>
-      <Link href="/salaries/nouveau" className="mt-6 block rounded-xl bg-accent px-6 py-4 text-center text-lg font-semibold text-black">+ Nouveau salarié</Link>
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        {cards.map((t) => <Link key={t.t} href={t.href} className="rounded-2xl border border-line bg-panel p-5 hover:border-accent"><p className="text-lg font-semibold">{t.t}</p><p className="mt-1 text-sm text-zinc-400">{t.v}</p></Link>)}
-      </div>
+
+      <Link href="/cours/chapitre-1" className="card mt-5 flex items-center justify-between p-5"><div><p className="font-bold">Mon cours</p><p className="text-sm text-slate-500">Chapitre 1 · Embaucher sans oublier la paperasse</p></div><span aria-hidden className="text-xl text-slate-400">›</span></Link>
     </main>
   );
 }

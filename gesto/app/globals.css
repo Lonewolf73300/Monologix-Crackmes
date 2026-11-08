@@ -1,4 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body { background: #0e0f12; color: #ececf0; }
+body { background: #f2f5f9; color: #0f172a; }
+@layer components {
+  .card { @apply rounded-2xl border border-line bg-panel shadow-card; }
+}

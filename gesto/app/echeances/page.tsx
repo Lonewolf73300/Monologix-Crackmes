@@ -25,12 +25,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ i
           <h2 className="text-xl font-bold">{focus.title}</h2>
           <p className="text-sm text-zinc-400">Échéance le {new Date(focus.due).toLocaleDateString("fr-FR")}{emp ? ` · salarié : ${decrypt<Emp>(emp.enc).name}` : ""}</p>
           {fdocs.length > 0 && <ul className="mt-3 space-y-1 text-sm">{fdocs.map((d) => <li key={d.id}>{KIND_LABEL[d.kind]} v{d.version} — {d.status === "valide" ? "validé" : "à relire"}</li>)}</ul>}
-          <Link href="/documents" className="mt-3 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black">Ouvrir mes documents</Link>
+          <Link href="/documents" className="mt-3 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white">Ouvrir mes documents</Link>
         </section>)}
       <PushButton />
       <ul className="mt-6 space-y-2">{rows.map((r) => (
         <li key={r.id} className="flex items-center justify-between rounded-xl border border-line bg-panel p-4">
-          <div className={r.done ? "opacity-50 line-through" : ""}><p className="font-semibold">{r.title}</p><p className={`text-sm ${!r.done && r.due < today ? "text-red-400" : "text-zinc-400"}`}>{new Date(r.due).toLocaleDateString("fr-FR")} · rappel {r.remind_days} j avant</p></div>
+          <div className={r.done ? "opacity-50 line-through" : ""}><p className="font-semibold">{r.title}</p><p className={`text-sm ${!r.done && r.due < today ? "text-red-600" : "text-zinc-400"}`}>{new Date(r.due).toLocaleDateString("fr-FR")} · rappel {r.remind_days} j avant</p></div>
           <form action={toggleDeadline}><input type="hidden" name="id" value={r.id} /><button className="rounded-lg border border-line px-3 py-2 text-sm">{r.done ? "Rouvrir" : "Fait"}</button></form>
         </li>))}
         {!rows.length && <li className="text-zinc-500">Aucune échéance.</li>}</ul>
