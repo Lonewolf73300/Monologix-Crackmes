@@ -24,6 +24,7 @@ Source : `gesto/STATE.md`, code de `gesto/`, et `tests/run.sh` relancé le 8 nov
 - Rappel par notification système (Web Push) : le serveur envoie un message chiffré signé VAPID à un faux service push local ; le lien de la notification ouvre le bon dossier.
 - Persistance : après redémarrage du serveur, la fiche salarié, le contrat v2 validé, l'abonnement push et le journal des rappels sont conservés.
 - Volume : 24 vérifications (17 de bout en bout + 7 de persistance), mode cœur ; le mode avec fonctions masquées passe aussi.
+- Indexation bloquée (le 8 novembre 2026) : en-tête `X-Robots-Tag: noindex`, balise robots et `robots.txt` en `Disallow: /`, vérifiés sur le serveur de production local.
 - Les fonctions hors V1 (espace employé, `/offres`, Stripe) sont masquées par défaut (`GESTO_EXTRAS` désactivé) ; leurs pages renvoient une 404.
 
 ### Non prouvé
@@ -52,3 +53,10 @@ Source : `gesto/STATE.md`, code de `gesto/`, et `tests/run.sh` relancé le 8 nov
 > **Bloc vérifié (application Gesto, Next.js + Postgres)** : parcours salarié, contrat avec alerte sur informations manquantes, validation journalisée, échéance et rappel par notification Web Push, persistance après redémarrage : 24 vérifications automatisées passent sur Postgres 16 vierge. Non prouvé : notification sur téléphone verrouillé, Supabase réel, Stripe réel, Resend réel. Paiement désactivé par défaut ; CGV, mentions légales et RGPD non rédigés.
 >
 > Objectif : un site public sans encaissement tant que la conformité n'est pas bouclée. Ne traite comme établi que le bloc vérifié. Liste les risques, les incohérences (nom Gestro/Gesto, deux bases de code possibles) et les prochaines actions prudentes, dans l'ordre. Ne propose aucune activation de paiement avant le SIREN, la validation bancaire et la relecture juridique.
+
+---
+
+## Décisions par défaut prises par Claude (à corriger si faux)
+1. « Gestro Studio » et « Gesto » restent deux blocs séparés tant que Lou n'a pas confirmé que c'est le même projet.
+2. Ordre de publication : vitrine sans paiement d'abord (comme dans le plan de Lou) ; l'application Gesto reste privée et non indexée.
+3. Aucune activation de paiement avant le SIREN, la validation bancaire et la relecture juridique.

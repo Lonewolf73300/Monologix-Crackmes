@@ -17,7 +17,7 @@ export default function Page() {
       </ul>
       <p className="mt-6 rounded-xl border border-line bg-panel p-4 text-sm text-zinc-400">
         Les mentions légales, CGV, droit de rétractation et politique RGPD définitifs seront publiés ici
-        après relecture par un professionnel, avant toute mise en vente. Ils ne sont pas encore rédigés.
+        après relecture par un professionnel, avant toute mise en vente. Ils ne sont pas encore rédigés : l'éditeur (identité, SIREN, adresse) sera indiqué ici dès l'immatriculation reçue. Aucun encaissement n'est ouvert.
       </p>
     </main>
   );

@@ -5,6 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Gesto — Ta paperasse, c'est fini.",
   manifest: "/manifest.webmanifest",
+  robots: { index: false, follow: false, nocache: true }, // privé tant que la conformité (SIREN, mentions, CGV, RGPD) n'est pas bouclée
   description: "Gesto enlève la paperasse aux commerçants et restaurateurs et t'évite les oublis.",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
