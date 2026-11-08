@@ -19,6 +19,9 @@ const ok = (c, m) => { if (!c) { console.error("ÉCHEC:", m); process.exit(1); }
   await p.fill("[name=name]", "Léa Martin"); await p.fill("[name=post]", "serveuse"); await p.fill("[name=start]", new Date(Date.now() + 3 * 864e5).toISOString().slice(0, 10));
   await p.fill("[name=hours]", "42"); await p.fill("[name=salary]", "2400"); await p.click("button:has-text('Générer')");
   await p.waitForURL("**/documents"); ok((await p.locator("text=J'ai relu, je valide").count()) === 2 && (await p.locator("text=Validation bloquée").count()) === 1, "3 documents générés : 2 à relire, contrat bloqué (infos manquantes)");
+  await p.goto(B + "/tableau-de-bord");
+  ok(await p.locator("text=Contrat bloqué").isVisible() && await p.locator("text=DPAE de Léa Martin à déclarer").isVisible() && await p.locator("text=3 documents en attente de validation").isVisible(), "tableau de bord : contrat bloqué (rouge), échéance DPAE et documents à relire (orange), données réelles");
+  await p.goto(B + "/documents");
   const r = await p.request.get(B + "/api/documents/3"); ok(r.status() === 403, "téléchargement refusé avant validation");
   ok(await p.locator("text=Informations manquantes").isVisible() && (await p.locator("text=Validation bloquée").count()) === 1, "alerte infos manquantes + validation du contrat bloquée");
   ok((await p.request.get(B + "/api/documents/1")).status() === 403, "contrat non téléchargeable tant qu'incomplet");

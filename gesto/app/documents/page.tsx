@@ -14,7 +14,7 @@ export default async function Page() {
       <p className="mt-2 rounded-xl border border-line bg-panel p-3 text-xs text-zinc-400">{MENTION}</p>
       <ul className="mt-6 space-y-3">{rows.map((r) => { const miss = r.kind === "contrat" ? missingInfo(decrypt<Emp>(r.enc)) : []; return (
         <li key={r.id} className="rounded-xl border border-line bg-panel p-4"><div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="font-semibold">{KIND_LABEL[r.kind]} — {decrypt<Emp>(r.enc).name}</p><p className="text-sm text-zinc-400">v{r.version} · {r.status === "valide" ? `validé le ${new Date(r.validated_at!).toLocaleString("fr-FR")}` : "à relire"}</p></div>
+          <div><p className="font-semibold">{KIND_LABEL[r.kind]} — {decrypt<Emp>(r.enc).name}</p><p className="text-sm text-zinc-400">v{r.version} · {r.status === "valide" ? `validé le ${new Date(r.validated_at!).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}` : "à relire"}</p></div>
           <div className="flex gap-2">
             <a href={`/api/documents/${r.id}?apercu=1`} className="rounded-lg border border-line px-3 py-2 text-sm">Relire</a>
             {r.status === "valide" ? <a href={`/api/documents/${r.id}`} className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-black">Télécharger</a>
@@ -31,7 +31,7 @@ export default async function Page() {
         </li>); })}
         {!rows.length && <li className="text-zinc-500">Aucun document. Crée un salarié pour en générer.</li>}</ul>
       <h2 className="mt-10 text-xl font-semibold">Journal de validation</h2>
-      <ul className="mt-2 space-y-1 text-sm text-zinc-400">{log.map((l, i) => <li key={i}>{new Date(l.at).toLocaleString("fr-FR")} · {l.actor} · {l.action} (v{l.version})</li>)}</ul>
+      <ul className="mt-2 space-y-1 text-sm text-zinc-400">{log.map((l, i) => <li key={i}>{new Date(l.at).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })} · {l.actor} · {l.action} (v{l.version})</li>)}</ul>
     </main>
   );
 }

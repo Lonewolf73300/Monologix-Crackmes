@@ -57,3 +57,9 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 - `GET /api/sante` (Bearer CRON_SECRET) : `pret_pour_rappels` + oui/non par réglage (base, clé chiffrement, secret session, VAPID, Resend, Stripe). À appeler après chaque déploiement.
 - Variables à renseigner sur Vercel : DATABASE_URL, GESTO_DATA_KEY, GESTO_SESSION_SECRET, CRON_SECRET, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (Resend et Stripe : plus tard).
 - Reste hors de mon accès : projet Supabase, compte Vercel, téléphone, SIREN, textes légaux.
+
+## 0.4.0 — Habillage inspiré des maquettes (fonctions existantes uniquement)
+- Thème sombre + accent orange conservé ; langage de couleurs repris des maquettes : rouge = problème immédiat, orange = à traiter, vert = OK, bleu = information (`app/tile.tsx`).
+- Navigation : barre latérale (desktop) / onglets en bas (mobile) une fois connecté (`app/nav.tsx`).
+- Accueil patron : « À traiter aujourd'hui » alimenté par les vraies données (échéances en retard / proches, contrats bloqués, documents à relire, appareil sans notifications). Accueil salarié : une action principale selon l'état (J'arrive / Pause / Reprendre / Je pars). Heures affichées en fuseau Europe/Paris.
+- NON CONSTRUIT (présent sur les maquettes, hors V1) : Gesto Now (« service dans 42 min », prévision), Mode Focus, météo, planning, remplacements validés par un manager, recrutement / candidatures, abonnement Pro, photos de profil. Les noms et chiffres des maquettes (Paul, Chloé, 12 candidatures…) sont des exemples, jamais à afficher comme des données réelles.

@@ -10,3 +10,6 @@
 
 ## 0.3.0
 - Migration SQLite → Postgres (Supabase), transactions, secrets obligatoires en production, tests sur Postgres jetable.
+
+## 0.4.0
+- Habillage patron/salarié (tuiles de statut, navigation, « À traiter » sur données réelles), heures en Europe/Paris, test du tableau de bord.
