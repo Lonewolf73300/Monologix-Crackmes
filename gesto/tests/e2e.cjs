@@ -61,6 +61,36 @@ const ok = (c, m) => { if (!c) { console.error("ÉCHEC:", m); process.exit(1); }
   ok((await p.request.get(B + "/api/sante")).status() === 401, "contrôle de configuration protégé");
   const sante = await (await p.request.get(B + "/api/sante", { headers: { authorization: "Bearer testsecret" } })).json();
   ok(sante.checks.base_postgres === true && sante.pret_pour_rappels === true && sante.checks.paiement_stripe === false && !JSON.stringify(sante).includes("testsecret"), "contrôle de configuration : prêt pour rappels, paiement coupé, aucun secret exposé");
+  // --- Fiche salarié : création complète, modification (nouvelle version à relire), suppression RGPD
+  await p.goto(B + "/salaries/nouveau");
+  await p.fill("[name=name]", "Paul Test"); await p.fill("[name=post]", "plongeur"); await p.fill("[name=start]", new Date(Date.now() + 10 * 864e5).toISOString().slice(0, 10));
+  await p.fill("[name=hours]", "35"); await p.fill("[name=salary]", "1900"); await p.fill("[name=convention]", "HCR (IDCC 1979)"); await p.fill("[name=essai]", "1 mois");
+  await p.click("button:has-text('Générer')"); await p.waitForURL("**/documents");
+  ok(await p.locator("text=Contrat de travail — Paul Test").isVisible(), "salarié complet : contrat non bloqué dès la création");
+  await p.goto(B + "/salaries"); await p.click("text=Paul Test"); await p.waitForURL(/\/salaries\/\d+$/);
+  await p.fill("[name=hours]", "39"); await p.click("button:has-text('Enregistrer les modifications')"); await p.waitForSelector("text=Enregistré.");
+  await p.reload();
+  ok((await p.locator("text=Version 2").count()) === 2 && (await p.locator("text=Version 1").count()) === 1, "fiche modifiée : contrat et fiche horaire en version 2 à relire, checklist inchangée");
+  await p.check("[name=confirm]"); await p.click("button:has-text('Supprimer la fiche')"); await p.waitForURL("**/salaries?supprime=1");
+  ok((await p.locator("text=Paul Test").count()) === 0, "fiche salarié supprimée");
+  await p.goto(B + "/echeances");
+  ok((await p.locator("text=DPAE de Paul Test").count()) === 0, "échéances du salarié supprimé effacées");
+  await p.click("[aria-label='Supprimer Échéance lointaine']"); await p.waitForSelector("text=Échéance lointaine", { state: "detached" });
+  ok(true, "échéance supprimée");
+  const exp = await p.request.get(B + "/api/export"); const ej = await exp.json();
+  ok(exp.status() === 200 && ej.salaries.some((x) => x.name === "Léa Martin") && !JSON.stringify(ej).includes("Paul Test"), "export RGPD complet, sans le salarié effacé");
+  ok((await (await br.newContext()).request.get(B + "/api/export")).status() === 401, "export refusé sans connexion");
+  await p.goto(B + "/parametres"); await p.fill("[name=dept]", "73"); await p.click("button:has-text('Enregistrer mon commerce')");
+  const saved = await p.waitForSelector("text=Enregistré.", { timeout: 10000 }).then(() => true).catch(async () => { console.log("PAGE:", (await p.locator("[role=alert]").allInnerTexts()).join(" | ")); return false; });
+  ok(saved, "réponses du diagnostic modifiables dans Paramètres");
+  // --- Suppression complète d'un compte (autre commerce)
+  const c3 = await br.newContext(); const z = await c3.newPage(); const zmail = `efface${Date.now()}@test.fr`;
+  await z.goto(B + "/inscription"); await z.fill("[name=email]", zmail); await z.fill("[name=password]", "motdepasse1"); await z.click("[name=cgv]"); await z.click("button:has-text('Créer mon compte')"); await z.waitForURL("**/diagnostic");
+  await z.fill("input[placeholder='Nom du commerce']", "À effacer"); await z.click("text=Continuer"); await z.fill("input[placeholder='Ex : 73']", "73"); await z.click("text=Continuer");
+  await z.click("button:has-text('bar')"); await z.click("button:has-text('1-5')"); await z.click("button:has-text('année')"); await z.click("text=Continuer"); await z.click("button:has-text('Déléguer')"); await z.waitForURL("**/tableau-de-bord");
+  await z.goto(B + "/parametres"); await z.fill("[name=confirm]", "SUPPRIMER"); await z.click("button:has-text('Supprimer définitivement')"); await z.waitForURL("**/?compte=supprime");
+  await z.goto(B + "/connexion"); await z.fill("[name=email]", zmail); await z.fill("[name=password]", "motdepasse1"); await z.click("button:has-text('Me connecter')");
+  ok(await z.waitForSelector("text=Email ou mot de passe incorrect.", { timeout: 10000 }).then(() => true).catch(() => false), "compte supprimé : plus aucune connexion possible"); await c3.close();
   if (process.env.GESTO_EXTRAS !== "1") { ok((await p.request.get(B + "/offres")).status() === 404 && (await p.request.get(B + "/salarie")).status() === 404, "extras masqués par défaut"); await br.close(); console.log("TOUS LES TESTS PASSENT (cœur V1)"); return; }
   await p.goto(B + "/salaries"); const code = (await p.locator("span.font-mono").innerText()).trim();
   await p.fill("[name=consigne]", "Ouverture 11h30"); await p.click("button:has-text('Enregistrer')"); await p.waitForLoadState("networkidle"); await p.waitForTimeout(500);

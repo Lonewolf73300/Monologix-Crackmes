@@ -11,6 +11,6 @@
 4. Planning de la semaine et météo dans l'espace employé ; pointage par position (consentement écrit, CNIL).
 5. Chapitres 2+ du cours + suivi de progression ; encart « Gesto peut le faire pour toi » par chapitre.
 6. Back-office codes promo / partenaires / affiliation, points → réduction ≤ 30 %, sponsors.
-7. Export et suppression RGPD, résiliation en un clic, email avant prélèvement.
+7. Résiliation en un clic et email avant prélèvement (avec Stripe). Export / suppression RGPD : FAIT (0.9.0).
 8. Relecture juridique : CGV, mentions, RGPD, modèles RH (avocat / juriste droit du travail).
 9. Validation avec 10 commerçants réels avant toute V2.

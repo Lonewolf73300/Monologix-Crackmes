@@ -25,3 +25,6 @@
 
 ## 0.8.0
 - Reproduction des 3 maquettes (patron mobile, patron ordinateur, salarié) sur données réelles ; prénom ; photos par commerce ; page Paramètres ; Mode Focus.
+
+## 0.9.0
+- Audit : 7 corrections, écrans secondaires refaits, diagnostic modifiable, fiche salarié modifiable/supprimable, suppression d'échéance, export et suppression RGPD, 39 vérifications.

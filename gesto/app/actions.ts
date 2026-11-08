@@ -5,10 +5,27 @@ import { revalidatePath } from "next/cache";
 import { db, encrypt, decrypt, now, logError } from "@/lib/db";
 import { checkPassword, endSession, hashPassword, requirePatron, startSession, currentUser } from "@/lib/auth";
 import { extras } from "@/lib/flags";
-import { missingInfo, type Emp } from "@/lib/documents";
+import { missingInfo, KIND_LABEL, type Emp, type Kind } from "@/lib/documents";
+import { TYPES, NB, SEASONS, PAINS, OBJECTIVES } from "@/lib/rules";
 
 const validDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d)) && new Date(d).toISOString().slice(0, 10) === d;
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
+const readEmp = (f: FormData): Emp => {
+  const e: Emp = { name: s(f, "name").slice(0, 80), post: s(f, "post").slice(0, 80), start: s(f, "start"), hours: s(f, "hours"), salary: s(f, "salary"), contractType: s(f, "contractType") === "CDD" ? "CDD" : "CDI", end: s(f, "end") };
+  for (const k of ["convention", "essai", "motif"] as const) { const v = s(f, k).slice(0, 120); if (v) e[k] = v; }
+  if (e.contractType === "CDI") { e.end = ""; delete e.motif; }
+  return e;
+};
+const checkEmp = (e: Emp): string | null => {
+  if (!e.name || !e.post || !e.start || !e.hours || !e.salary) return "Les six questions sont obligatoires.";
+  if (!validDate(e.start) || (e.end && !validDate(e.end))) return "Date invalide.";
+  if (e.contractType === "CDD" && !e.end) return "Pour un CDD, indique la date de fin.";
+  if (e.end && e.end < e.start) return "La date de fin doit être après la date de début.";
+  const h = Number(e.hours), sal = Number(e.salary);
+  if (!(h > 0 && h <= 48)) return "Horaires hebdomadaires : entre 1 et 48 heures.";
+  if (!(sal >= 0 && sal < 100000)) return "Salaire invalide.";
+  return null;
+};
 
 export async function signup(_: unknown, f: FormData) {
   const email = s(f, "email").toLowerCase(), pw = s(f, "password");
@@ -46,17 +63,16 @@ export async function saveDiagnostic(data: { name: string; type: string; dept: s
 
 export async function createEmployee(_: unknown, f: FormData) {
   const u = await requirePatron();
-  const e: Emp = { name: s(f, "name"), post: s(f, "post"), start: s(f, "start"), hours: s(f, "hours"), salary: s(f, "salary"), contractType: s(f, "contractType"), end: s(f, "end") };
-  if (!e.name || !e.post || !e.start || !e.hours || !e.salary) return { error: "Les six questions sont obligatoires." };
-  if (!validDate(e.start) || (e.end && !validDate(e.end))) return { error: "Date invalide." };
-  if (e.contractType === "CDD" && !e.end) return { error: "Pour un CDD, indique la date de fin." };
+  const e = readEmp(f);
+  const err = checkEmp(e);
+  if (err) return { error: err };
   // Tout ou rien : le salarié, ses 3 documents, le journal et l'échéance DPAE sont créés ensemble.
   await db.tx(async (t) => {
     const r = await t.prepare("INSERT INTO employees(company_id,enc,created) VALUES(?,?,?)").run(u.company_id, encrypt(e), now());
     const eid = Number(r.lastInsertRowid);
     for (const kind of ["contrat", "fiche_horaire", "checklist_dpae"]) {
       const d = await t.prepare("INSERT INTO documents(company_id,employee_id,kind,created) VALUES(?,?,?,?)").run(u.company_id, eid, kind, now());
-      await t.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,1)").run(u.company_id, now(), u.email, `Document généré : ${kind} pour ${e.name}`, Number(d.lastInsertRowid));
+      await t.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,1)").run(u.company_id, now(), u.email, `Document généré : ${KIND_LABEL[kind as Kind]} pour ${e.name}`, Number(d.lastInsertRowid));
     }
     await t.prepare("INSERT INTO deadlines(company_id,title,due,remind_days,employee_id) VALUES(?,?,?,5,?)").run(u.company_id, `DPAE de ${e.name} à déclarer`, e.start, eid);
   });
@@ -71,7 +87,7 @@ export async function validateDoc(f: FormData) {
   if (!d) return;
   if (d.kind === "contrat" && missingInfo(decrypt<Emp>(d.enc)).length) return; // validation refusée : infos manquantes
   await db.prepare("UPDATE documents SET status='valide', validated_at=? WHERE id=?").run(now(), id);
-  await db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, `Document validé : ${d.kind}`, id, d.version);
+  await db.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, `Document validé : ${KIND_LABEL[d.kind as Kind]}`, id, d.version);
   revalidatePath("/documents");
   revalidatePath("/tableau-de-bord");
 }
@@ -151,4 +167,91 @@ export async function saveFirstName(_: unknown, f: FormData) {
   await db.prepare("UPDATE users SET first_name=? WHERE id=?").run(s(f, "first_name").slice(0, 40) || null, u.id);
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+// ---- Paramètres : réponses du diagnostic modifiables à tout moment (cahier des charges).
+export async function updateCompany(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  const name = s(f, "name").slice(0, 80), dept = s(f, "dept").slice(0, 3);
+  const type = s(f, "type"), nb = s(f, "nb_sal"), season = s(f, "season"), objective = s(f, "objective");
+  const pains = f.getAll("pains").map(String).filter((p) => PAINS.includes(p));
+  if (!name) return { error: "Le nom du commerce est obligatoire." };
+  if (!(TYPES as readonly string[]).includes(type) || !(NB as readonly string[]).includes(nb) || !(SEASONS as readonly string[]).includes(season) || !OBJECTIVES.includes(objective)) return { error: "Réponse invalide." };
+  await db.prepare("UPDATE companies SET name=?,dept=?,type=?,nb_sal=?,season=?,pains=?,objective=? WHERE id=?").run(name, dept, type, nb, season, JSON.stringify(pains), objective, u.company_id);
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+// ---- Échéances
+export async function deleteDeadline(f: FormData) {
+  const u = await requirePatron();
+  await db.prepare("DELETE FROM deadlines WHERE id=? AND company_id=?").run(Number(f.get("id")), u.company_id);
+  revalidatePath("/echeances"); revalidatePath("/tableau-de-bord");
+}
+
+// ---- Fiche salarié : modification (les documents concernés repassent « à relire » en nouvelle version)
+const DEPENDS: Record<Kind, (keyof Emp)[]> = {
+  contrat: ["name", "post", "start", "end", "hours", "salary", "contractType", "convention", "essai", "motif"],
+  fiche_horaire: ["name", "post", "hours"],
+  checklist_dpae: ["name", "start"],
+};
+export async function updateEmployee(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  const eid = Number(f.get("employee_id"));
+  const row = (await db.prepare("SELECT enc FROM employees WHERE id=? AND company_id=?").get(eid, u.company_id)) as { enc: string } | undefined;
+  if (!row) return { error: "Salarié introuvable." };
+  const before = decrypt<Emp>(row.enc);
+  const e = readEmp(f);
+  const err = checkEmp(e);
+  if (err) return { error: err };
+  const changed = (Object.keys(DEPENDS) as Kind[]).filter((k) => DEPENDS[k].some((field) => (before[field] ?? "") !== (e[field] ?? "")));
+  if (!changed.length) return { ok: true };
+  await db.tx(async (t) => {
+    await t.prepare("UPDATE employees SET enc=? WHERE id=?").run(encrypt(e), eid);
+    for (const kind of changed) {
+      const d = (await t.prepare("SELECT id,version FROM documents WHERE employee_id=? AND kind=?").get(eid, kind)) as { id: number; version: number } | undefined;
+      if (!d) continue;
+      await t.prepare("UPDATE documents SET version=version+1, status='a_relire', validated_at=NULL WHERE id=?").run(d.id);
+      await t.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,?)").run(u.company_id, now(), u.email, `Fiche modifiée : ${KIND_LABEL[kind]} à revalider`, d.id, d.version + 1);
+    }
+    if (before.start !== e.start) await t.prepare("UPDATE deadlines SET due=? WHERE employee_id=? AND company_id=? AND done=0 AND title LIKE 'DPAE%'").run(e.start, eid, u.company_id);
+  });
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+// ---- Suppression d'une fiche salarié (RGPD : effacement réel, journal nettoyé du nom)
+export async function deleteEmployee(f: FormData) {
+  const u = await requirePatron();
+  const eid = Number(f.get("employee_id"));
+  if (!f.get("confirm")) return;
+  const emp = (await db.prepare("SELECT user_id FROM employees WHERE id=? AND company_id=?").get(eid, u.company_id)) as { user_id: number | null } | undefined;
+  if (!emp) return;
+  await db.tx(async (t) => {
+    await t.prepare("DELETE FROM journal WHERE company_id=? AND doc_id IN (SELECT id FROM documents WHERE employee_id=?)").run(u.company_id, eid);
+    await t.prepare("DELETE FROM documents WHERE employee_id=? AND company_id=?").run(eid, u.company_id);
+    await t.prepare("DELETE FROM deadlines WHERE employee_id=? AND company_id=?").run(eid, u.company_id);
+    await t.prepare("DELETE FROM punches WHERE employee_id=? AND company_id=?").run(eid, u.company_id);
+    await t.prepare("DELETE FROM employees WHERE id=? AND company_id=?").run(eid, u.company_id);
+    if (emp.user_id) await t.prepare("DELETE FROM users WHERE id=? AND role='salarie'").run(emp.user_id);
+    await t.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,NULL,NULL)").run(u.company_id, now(), u.email, "Fiche salarié supprimée à la demande (données effacées)");
+  });
+  revalidatePath("/", "layout");
+  redirect("/salaries?supprime=1");
+}
+
+// ---- Suppression du compte et de toutes les données du commerce (RGPD)
+export async function deleteAccount(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  if (s(f, "confirm") !== "SUPPRIMER") return { error: "Écris SUPPRIMER en majuscules pour confirmer." };
+  const c = u.company_id;
+  await db.tx(async (t) => {
+    for (const table of ["punches", "push_subs", "notifications", "deadlines", "journal", "documents", "employees", "company_media"])
+      await t.prepare(`DELETE FROM ${table} WHERE company_id=?`).run(c);
+    await t.prepare("DELETE FROM purchases WHERE user_id IN (SELECT id FROM users WHERE company_id=?)").run(c);
+    await t.prepare("DELETE FROM users WHERE company_id=? OR id=?").run(c, u.id);
+    await t.prepare("DELETE FROM companies WHERE id=?").run(c);
+  });
+  await endSession();
+  redirect("/?compte=supprime");
 }

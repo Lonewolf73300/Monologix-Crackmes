@@ -88,3 +88,10 @@ Extras (espace employé, /offres, Stripe) masqués par défaut : `GESTO_EXTRAS=1
 - Nouveau : prénom (inscription + Paramètres, colonne `users.first_name`) ; photos par commerce (`company_media`, route `/api/media/[kind]`, JPEG/PNG/WebP ≤ 3 Mo, lecture réservée au commerce) ; page `/parametres`.
 - Retiré des maquettes car non construit : météo, planning, recrutement / candidatures, remplacements, « Qui contacter », abonnement Pro.
 - Tests : 30 vérifications (dont prénom, envoi photo, format refusé, accès sans connexion refusé) + persistance.
+
+## 0.9.0 — Audit complet : corrections, écrans secondaires, manques du cahier des charges
+- Corrigé : journal avec codes bruts (`checklist_dpae` → « Checklist DPAE », anciennes entrées aussi) ; cases à cocher de l'inscription ; « Créer mon compte » proposé à un patron connecté (page cours) ; « depuis le » pour une date future (« Arrive le… ») ; « Invitation en attente » affiché alors que l'espace employé est masqué ; diagnostic sans en-tête ni majuscules ; pages secondaires sans marge haute.
+- Validation serveur renforcée (heures 1–48, salaire, fin de CDD après le début).
+- Écrans refaits au style des maquettes : Équipe, fiche salarié, Nouveau salarié (CDI/CDD, champs du contrat dès la création), Documents (par salarié, progression, journal en frise), Échéances (en retard / à venir / faites, date relative), connexion / inscription / rejoindre.
+- Ajouté (exigences du cahier des charges) : réponses du diagnostic modifiables dans Paramètres ; fiche salarié modifiable (documents concernés → nouvelle version à relire, échéance DPAE déplacée si la date change) ; suppression d'une fiche (effacement réel, journal nettoyé du nom) ; suppression d'une échéance ; export RGPD JSON (`/api/export`) ; suppression complète du compte (confirmation « SUPPRIMER »).
+- Tests : 32 vérifications de bout en bout + 7 de persistance, dans les deux modes.

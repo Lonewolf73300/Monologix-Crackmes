@@ -30,13 +30,21 @@ export default function PushButton() {
     setState("inactif");
   }
   return (
-    <div className="mt-4 rounded-lg border border-line bg-panel p-4 text-sm">
-      {state === "actif" && <p className="text-green-700">Notifications système activées sur cet appareil. <button onClick={disable} className="ml-2 underline text-zinc-400">Désactiver</button></p>}
-      {state === "inactif" && <button onClick={enable} className="rounded-lg bg-accent px-4 py-2 font-semibold text-white">Activer les rappels sur cet appareil</button>}
-      {state === "refuse" && <p className="text-red-700">Notifications refusées : autorise-les dans les réglages du navigateur.</p>}
-      {state === "indisponible" && <p className="text-zinc-400">{msg}</p>}
-      {state === "chargement" && <p className="text-zinc-500">…</p>}
-      {msg && state !== "indisponible" && <p className="mt-2 text-red-700">{msg}</p>}
+    <div className={`mt-6 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center ${state === "actif" ? "border-green-200 bg-green-50" : "border-blue-200 bg-blue-50"}`}>
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${state === "actif" ? "bg-green-600" : "bg-blue-600"} text-white`}>
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+      </span>
+      <div className="min-w-0 flex-1 text-sm">
+        <p className="font-bold text-[#0f172a]">Rappels sur ce téléphone</p>
+        {state === "actif" && <p className="text-green-800">Activés : tu recevras tes rappels même écran verrouillé.</p>}
+        {state === "inactif" && <p className="text-blue-900">Reçois tes échéances à l&apos;heure, même écran verrouillé.</p>}
+        {state === "refuse" && <p className="text-red-700">Notifications refusées : autorise-les dans les réglages du navigateur.</p>}
+        {state === "indisponible" && <p className="text-zinc-500">{msg}</p>}
+        {state === "chargement" && <p className="text-zinc-500">Vérification…</p>}
+        {msg && state !== "indisponible" && <p className="mt-1 text-red-700">{msg}</p>}
+      </div>
+      {state === "actif" && <button onClick={disable} className="btn-ghost px-4 py-2 text-sm">Désactiver</button>}
+      {state === "inactif" && <button onClick={enable} className="btn-primary px-4 py-2.5 text-sm">Activer les rappels sur cet appareil</button>}
     </div>
   );
 }

@@ -3,7 +3,9 @@ import { useState } from "react";
 import { saveDiagnostic } from "../actions";
 import { TYPES, NB, SEASONS, PAINS, OBJECTIVES } from "@/lib/rules";
 
-const big = "w-full rounded-lg border border-line bg-panel px-5 py-4 text-left text-lg transition hover:border-zinc-400";
+const big = "flex w-full items-center justify-between rounded-xl border border-line bg-white px-5 py-4 text-left text-lg font-medium transition hover:border-accent hover:bg-green-50/50";
+const cap = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
+const Chev = () => <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-zinc-400" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m9 18 6-6-6-6" /></svg>;
 export default function Wizard() {
   const [step, setStep] = useState(0);
   const [d, setD] = useState({ name: "", type: "", dept: "", nb_sal: "", season: "", pains: [] as string[], objective: "" });
@@ -11,7 +13,7 @@ export default function Wizard() {
   const set = (k: string, v: string) => setD((x) => ({ ...x, [k]: v }));
   const next = () => setStep((s) => s + 1);
   const pick = (k: string, v: string) => { set(k, v); next(); };
-  const Opt = ({ k, v }: { k: string; v: string }) => <button type="button" className={big} onClick={() => pick(k, v)}>{v}</button>;
+  const Opt = ({ k, v }: { k: string; v: string }) => <button type="button" className={big} onClick={() => pick(k, v)}>{cap(v)}<Chev /></button>;
   const titles = ["Comment s'appelle ton commerce ?", "Dans quel département ?", "Quel type de commerce ?", "Combien de salariés ?", "Ton activité est…", "Tes douleurs concrètes (plusieurs choix)", "Ton objectif prioritaire"];
   return (
     <div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { currentUser } from "@/lib/auth";
 
 export const metadata = { title: "Chapitre 1 — Embaucher sans oublier la paperasse" };
 const steps: [string, string][] = [
@@ -9,9 +10,10 @@ const steps: [string, string][] = [
   ["Mutuelle et médecine du travail", "L'affiliation à la mutuelle d'entreprise est obligatoire, et une visite d'information et de prévention doit être planifiée après l'embauche."],
   ["Les échéances qui font perdre de l'argent", "Fin de CDD, visites médicales, renouvellements : une date oubliée coûte plus cher que le temps d'un rappel."],
 ];
-export default function Page() {
+export default async function Page() {
+  const user = await currentUser().catch(() => null);
   return (
-    <main className="mx-auto max-w-2xl px-5 pb-10">
+    <main className="mx-auto max-w-2xl px-5 pb-10 pt-6 lg:pt-10">
       <p className="text-sm text-accent">Chapitre 1 · gratuit · sans carte bancaire</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">Embaucher sans oublier la paperasse</h1>
       <p className="mt-3 text-zinc-300">Six réflexes à avoir pour chaque nouveau salarié. Simple, dans l&apos;ordre, et utile même sans Gesto.</p>
@@ -21,7 +23,7 @@ export default function Page() {
       <aside className="mt-8 rounded-2xl border border-accent/40 bg-panel p-6">
         <h2 className="text-xl font-semibold">Ce que je viens de t&apos;apprendre, Gesto peut le faire pour toi</h2>
         <p className="mt-2 text-sm text-zinc-400">Gesto prépare le contrat, la fiche horaire et la checklist DPAE en 30 secondes, tu relis et valides, et il te rappelle tes échéances. Gesto ne déclare rien à ta place.</p>
-        <Link href="/inscription" className="mt-4 inline-block rounded-lg bg-accent px-5 py-3 font-semibold text-white">Créer mon compte</Link>
+        {user ? <Link href="/salaries/nouveau" className="btn-primary mt-4">Créer un salarié maintenant</Link> : <Link href="/inscription" className="btn-primary mt-4">Créer mon compte</Link>}
       </aside>
     </main>
   );
