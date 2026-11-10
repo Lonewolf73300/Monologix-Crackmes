@@ -1,0 +1,21 @@
+prenom;nom;role;email;telephone;statut;note
+Lola;Hamon;barmaid;email_in_thread;;embauche;
+Gabin;Heine;limonadier;email_in_thread;;embauche;
+Andrea;Favarel;runneuse / serveuse;email_in_thread;;embauche;nom complet indiqué : Andrea Macarena Olortegui Ramirez
+Clément;Favarel;chef de partie froid;email_in_thread;;embauche;
+Loreleï;Volt;polyvalente;email_in_thread;;embauche;
+Axel;Sbrizzi;snackeur;email_in_thread;;embauche;
+Sébastien;Thilliez;snackeur;email_in_thread;;embauche;
+Kevin;Biribo;plongeur;email_in_thread;;embauche;retour
+Jérémie;Pothin;crêpier;email_in_thread;;embauche;retour
+Mickaël;Manfredi;pizzaiolo;email_in_thread;;embauche;retour
+Lucas;Dos Santos Albuquerque;commis de cuisine;email_in_thread;;embauche;
+Matéo;Levasseur;second de cuisine;email_in_thread;;embauche;retour
+Chloé;Dété;chef de rang;email_in_thread;;embauche;retour
+Sébastien;Papot;chef de rang;email_in_thread;;embauche;
+Gianni;Drago;chef de rang;email_in_thread;;embauche;confirmé, embauché
+David;Remy;chef de cuisine;email_in_thread;;embauche;promesse d'embauche du 16 septembre 2026
+Fabrice;;guide motoneige;email_in_thread;;en_attente;nom probablement Dufresne, non confirmé
+;;poste à confirmer;email_in_thread;;en_attente;frère de Lou, prénom, nom et poste non confirmés
+Titi;;poste à confirmer;email_in_thread;;en_attente;surnom seulement, identité et poste à confirmer
+James;Adrait;manager optionnel;email_in_thread;;optionnel;ne pas inviter tant que Lou ne le confirme pas

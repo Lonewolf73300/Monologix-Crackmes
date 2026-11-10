@@ -20,7 +20,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ i
   const days = (d: string) => Math.round((Date.parse(d) - Date.parse(today)) / 864e5);
   const fr = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
   const rel = (d: string) => { const k = days(d); return k < 0 ? `en retard de ${-k} j` : k === 0 ? "aujourd'hui" : k === 1 ? "demain" : `dans ${k} j`; };
-  const late = rows.filter((r) => !r.done && r.due < today), next = rows.filter((r) => !r.done && r.due >= today), done = rows.filter((r) => r.done);
+  const late = rows.filter((r) => !r.done && r.due < today), todayRows = rows.filter((r) => !r.done && r.due === today), next = rows.filter((r) => !r.done && r.due > today), done = rows.filter((r) => r.done);
+  const history = (await db.prepare("SELECT at,subject,status FROM notifications WHERE company_id=? ORDER BY id DESC LIMIT 20").all(u.company_id)) as { at: string; subject: string; status: string }[];
 
   const Item = ({ r }: { r: D }) => {
     const tone = r.done ? "vert" : r.due < today ? "rouge" : days(r.due) <= 7 ? "orange" : "bleu";
@@ -43,7 +44,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ i
 
   return (
     <main className="mx-auto max-w-4xl px-4 pb-10 pt-6 lg:px-8 lg:pt-10">
-      <PageHeader icon="calendar" tone="bleu" title="Mes échéances" sub="Rappel à la bonne date par notification système, à défaut par email (2 par semaine maximum)." />
+      <PageHeader icon="calendar" tone="bleu" title="Mes échéances" sub="Le rappel s'affiche ici à la date. Deux notifications par semaine au maximum, si tu as activé le téléphone." />
+      <p className="mt-4 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">{process.env.RESEND_API_KEY ? "L'envoi d'e-mails est configuré. Un e-mail ne part que si la notification sur le téléphone n'a pas abouti." : "Les rappels par e-mail ne sont pas activés. Aucun message n'est envoyé. Le rappel reste visible dans cette page, à la date indiquée."}</p>
 
       {focus && (
         <section id="dossier" className="mt-6 overflow-hidden rounded-[22px] border-2 border-accent bg-white shadow-lift">
@@ -60,9 +62,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ i
       <PushButton />
 
       {!rows.length && <div className="card mt-6 p-8 text-center"><p className="text-lg font-bold">Aucune échéance</p><p className="mt-1 text-zinc-500">Ajoute une date à ne pas rater : Gesto te la rappellera.</p></div>}
+      <Group title="Rappel du jour" tone="orange" list={todayRows} />
       <Group title="En retard" tone="rouge" list={late} />
       <Group title="À venir" tone="orange" list={next} />
       <Group title="Faites" tone="vert" list={done} />
+      <section className="mt-8">
+        <h2 className="text-lg font-bold">Historique des rappels</h2>
+        <ul className="mt-3 space-y-2">{history.map((h, i) => <li key={i} className="card px-4 py-3 text-sm"><p className="font-medium">{h.subject}</p><p className="text-zinc-500">{new Date(h.at).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })} · {h.status === "non_envoye" ? "affiché dans l'application, e-mail non envoyé" : h.status === "email_envoye" ? "e-mail envoyé" : h.status === "push_envoye" ? "notification téléphone" : h.status}</p></li>)}
+          {!history.length && <li className="text-sm text-zinc-500">Aucun rappel déclenché pour l&apos;instant. Une échéance ouverte apparaît ci-dessus dès que sa date est atteinte ou dépassée.</li>}</ul>
+      </section>
 
       <section className="card mt-8 p-5 lg:p-6">
         <h2 className="text-lg font-bold">Ajouter une échéance</h2>

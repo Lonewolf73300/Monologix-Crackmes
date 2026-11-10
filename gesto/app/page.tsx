@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Banner } from "./banner";
 import { Chip, Icon, type IconName } from "./icons";
-import { extras } from "@/lib/flags";
 
 const proofs: [IconName, "vert" | "orange" | "bleu", string, string][] = [
   ["clipboard", "vert", "Un document en 30 secondes", "Six questions. Le contrat, la fiche horaire et la checklist DPAE sont prêts à relire."],
@@ -41,9 +40,9 @@ export default function Home() {
         <h2 className="text-center text-3xl font-bold tracking-tight lg:text-4xl">Deux façons d&apos;avancer</h2>
         <div className="mx-auto mt-8 grid max-w-4xl gap-4 md:grid-cols-2">
           <div className="card p-7">
-            <Chip name="book" tone="vert" /><p className="mt-5 text-sm font-bold uppercase tracking-wider text-zinc-500">Apprendre</p>
+            <Chip name="book" tone="vert" /><p className="mt-5 text-sm font-bold uppercase tracking-wider text-zinc-500">Le cours</p>
             <p className="mt-2 text-5xl font-bold tracking-tight">47&nbsp;€</p>
-            <p className="mt-1 text-sm text-zinc-500">Prix de lancement, puis 97 €. Paiement unique.</p>
+            <p className="mt-1 text-sm text-zinc-500">Le cours · paiement unique.</p>
             <ul className="mt-6 space-y-2.5 text-zinc-500">{["Le cours en ligne complet", "Chapitre 1 gratuit, sans carte"].map((x) => <li key={x} className="flex items-center gap-2.5"><Icon name="check" className="h-4 w-4 text-accent" />{x}</li>)}</ul>
           </div>
           <div className="relative overflow-hidden rounded-2xl bg-night p-7 text-white shadow-lift">
@@ -51,9 +50,10 @@ export default function Home() {
             <p className="mt-2 text-5xl font-bold tracking-tight">24&nbsp;€<span className="text-lg font-medium text-white/50"> / mois</span></p>
             <p className="mt-1 text-sm text-white/50">Sans engagement.</p>
             <ul className="mt-6 space-y-2.5 text-white/80">{["Documents salariés préparés", "Rappels d'échéances sur téléphone", "Journal de validation"].map((x) => <li key={x} className="flex items-center gap-2.5"><Icon name="check" className="h-4 w-4 text-gold" />{x}</li>)}</ul>
-            {extras && <Link href="/offres" className="btn-gold mt-6">Voir l&apos;offre</Link>}
+            <p className="mt-6 text-sm font-semibold text-gold">Paiement non encore activé</p>
           </div>
         </div>
+        <p className="mt-4 text-center text-sm text-zinc-500"><Link href="/tarifs" className="font-semibold underline">Voir les deux offres</Link> · Paiement non encore activé</p>
       </section>
 
       <section className="mt-16 lg:mt-24">

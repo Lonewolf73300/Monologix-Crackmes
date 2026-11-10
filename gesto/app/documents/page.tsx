@@ -41,7 +41,7 @@ export default async function Page() {
                 <li key={r.id} className={`rounded-xl px-4 py-3 ${blocked ? "bg-red-50" : r.status === "valide" ? "bg-green-50/60" : "bg-slate-50"}`}>
                   <div className="flex flex-wrap items-center gap-3">
                     <Icon name={r.status === "valide" ? "checkCircle" : blocked ? "alert" : "file"} className={`h-6 w-6 shrink-0 ${r.status === "valide" ? "text-green-600" : blocked ? "text-red-600" : "text-amber-500"}`} />
-                    <div className="min-w-0 flex-1"><p className="font-semibold">{KIND_LABEL[r.kind]} — {g.emp.name}</p><p className="text-sm text-zinc-500">{r.status === "valide" ? `v${r.version} · validé le ${when(r.validated_at!)}` : `v${r.version} · à relire`}</p></div>
+                    <div className="min-w-0 flex-1"><p className="font-semibold">{KIND_LABEL[r.kind]} — {g.emp.name}</p><p className="text-sm text-zinc-500">{r.status === "valide" ? `v${r.version} · validé le ${when(r.validated_at!)}` : `v${r.version} · à relire`}</p><p className="text-xs font-semibold text-zinc-600">{r.status === "valide" ? "Statut : Validé par le patron" : "Statut : À relire"} — brouillon à faire vérifier, pas un contrat à signer. Convention collective et clauses obligatoires à contrôler.</p></div>
                     <div className="flex gap-2">
                       <a href={`/api/documents/${r.id}?apercu=1`} className="btn-ghost px-3 py-2 text-sm"><Icon name="eye" className="h-4 w-4" />Relire</a>
                       {r.status === "valide" ? <a href={`/api/documents/${r.id}`} className="btn-primary px-3 py-2 text-sm">Télécharger</a>

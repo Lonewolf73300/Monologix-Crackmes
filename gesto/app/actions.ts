@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db, encrypt, decrypt, now, logError } from "@/lib/db";
 import { checkPassword, endSession, hashPassword, requirePatron, startSession, currentUser } from "@/lib/auth";
-import { extras } from "@/lib/flags";
 import { missingInfo, KIND_LABEL, type Emp, type Kind } from "@/lib/documents";
 import { TYPES, NB, SEASONS, PAINS, OBJECTIVES } from "@/lib/rules";
+import { contactError, parseRosterCsv, type RosterInput } from "@/lib/roster";
 
 const validDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d)) && new Date(d).toISOString().slice(0, 10) === d;
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -75,6 +75,8 @@ export async function createEmployee(_: unknown, f: FormData) {
       await t.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,?,1)").run(u.company_id, now(), u.email, `Document généré : ${KIND_LABEL[kind as Kind]} pour ${e.name}`, Number(d.lastInsertRowid));
     }
     await t.prepare("INSERT INTO deadlines(company_id,title,due,remind_days,employee_id) VALUES(?,?,?,5,?)").run(u.company_id, `DPAE de ${e.name} à déclarer`, e.start, eid);
+    const rid = Number(s(f, "roster_id"));
+    if (rid) await t.prepare("UPDATE roster SET employee_id=? WHERE id=? AND company_id=? AND employee_id IS NULL").run(eid, rid, u.company_id);
   });
   revalidatePath("/", "layout");
   redirect("/documents");
@@ -115,16 +117,110 @@ export async function saveConsigne(f: FormData) {
   revalidatePath("/salaries");
 }
 
+async function staffLabel(userId: number, companyId: number, email: string): Promise<string> {
+  const roster = (await db.prepare("SELECT enc FROM roster WHERE user_id=? AND company_id=?").get(userId, companyId)) as { enc: string } | undefined;
+  if (roster) { const r = decrypt<RosterInput>(roster.enc); return `${r.firstName} ${r.lastName}`; }
+  const emp = (await db.prepare("SELECT enc FROM employees WHERE user_id=? AND company_id=?").get(userId, companyId)) as { enc: string } | undefined;
+  if (emp) return decrypt<Emp>(emp.enc).name;
+  const u = (await db.prepare("SELECT first_name FROM users WHERE id=?").get(userId)) as { first_name: string | null } | undefined;
+  return u?.first_name || email;
+}
+
+async function insertRoster(companyId: number, rows: RosterInput[]) {
+  const existing = (await db.prepare("SELECT enc FROM roster WHERE company_id=?").all(companyId)) as { enc: string }[];
+  const keys = new Set(existing.map((e) => { const r = decrypt<RosterInput>(e.enc); return `${r.firstName.toLowerCase()}|${r.lastName.toLowerCase()}`; }));
+  let n = 0;
+  const errors: string[] = [];
+  for (const row of rows) {
+    const key = `${row.firstName.toLowerCase()}|${row.lastName.toLowerCase()}`;
+    if (keys.has(key)) { errors.push(`${row.firstName} ${row.lastName} est déjà dans l'équipe.`); continue; }
+    let code = "";
+    for (let i = 0; i < 5; i++) {
+      code = crypto.randomBytes(4).toString("hex").toUpperCase();
+      if (!(await db.prepare("SELECT 1 FROM roster WHERE invite_code=?").get(code)) && !(await db.prepare("SELECT 1 FROM companies WHERE invite_code=?").get(code))) break;
+    }
+    await db.prepare("INSERT INTO roster(company_id,enc,invite_code,created) VALUES(?,?,?,?)").run(companyId, encrypt(row), code, now());
+    keys.add(key);
+    n++;
+  }
+  return { n, errors };
+}
+
+export async function addRosterPerson(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  const row: RosterInput = { firstName: s(f, "first_name").slice(0, 40), lastName: s(f, "last_name").slice(0, 40), role: s(f, "role").slice(0, 80), contact: s(f, "contact").slice(0, 80) };
+  if (!row.firstName || !row.lastName || !row.role) return { error: "Prénom, nom et rôle sont obligatoires." };
+  const bad = contactError(row.contact);
+  if (bad) return { error: bad };
+  if (row.contact.includes("@")) row.contact = row.contact.toLowerCase();
+  const res = await insertRoster(u.company_id, [row]);
+  revalidatePath("/salaries");
+  if (!res.n) return { error: res.errors[0] || "Personne non ajoutée." };
+  return { ok: true };
+}
+
+export async function importRoster(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  const parsed = parseRosterCsv(s(f, "csv"));
+  if (!parsed.rows.length) return { error: parsed.errors[0] || "Aucune personne à importer." };
+  const res = await insertRoster(u.company_id, parsed.rows);
+  revalidatePath("/salaries");
+  const detail = [...(res.n ? [`${res.n} personne${res.n > 1 ? "s" : ""} ajoutée${res.n > 1 ? "s" : ""}.`] : []), ...parsed.errors, ...res.errors];
+  if (!res.n) return { error: detail.join(" ") };
+  if (parsed.errors.length || res.errors.length) return { error: detail.join(" ") };
+  return { ok: true };
+}
+
+export async function addDirective(_: unknown, f: FormData) {
+  const u = await requirePatron();
+  const body = s(f, "body").slice(0, 2000);
+  if (body.length < 2) return { error: "Écris la consigne." };
+  await db.prepare("INSERT INTO directives(company_id,body,created) VALUES(?,?,?)").run(u.company_id, body, now());
+  revalidatePath("/consignes");
+  revalidatePath("/salarie");
+  return { ok: true };
+}
+
+export async function staffWrite(_: unknown, f: FormData) {
+  const u = await currentUser();
+  if (!u || u.role !== "salarie" || !u.company_id) redirect("/connexion");
+  const body = s(f, "body").slice(0, 2000);
+  const kind = s(f, "kind") === "rapport" ? "rapport" : "reponse";
+  if (body.length < 2) return { error: "Écris au moins quelques mots." };
+  const directiveId = Number(s(f, "directive_id")) || null;
+  if (kind === "reponse") {
+    if (!directiveId) return { error: "Choisis la consigne à laquelle tu réponds." };
+    const d = await db.prepare("SELECT id FROM directives WHERE id=? AND company_id=?").get(directiveId, u.company_id);
+    if (!d) return { error: "Cette consigne n'est pas dans ton restaurant." };
+  }
+  const author = await staffLabel(u.id, u.company_id, u.email);
+  await db.prepare("INSERT INTO staff_messages(company_id,user_id,directive_id,kind,body,author,created) VALUES(?,?,?,?,?,?,?)").run(u.company_id, u.id, kind === "rapport" ? null : directiveId, kind, body, author, now());
+  revalidatePath("/salarie");
+  revalidatePath("/consignes");
+  return { ok: true };
+}
+
 export async function joinCompany(_: unknown, f: FormData) {
-  if (!extras) return { error: "Indisponible." };
   const code = s(f, "code").toUpperCase(), email = s(f, "email").toLowerCase(), pw = s(f, "password");
-  const co = await db.prepare("SELECT id FROM companies WHERE invite_code=?").get(code) as { id: number } | undefined;
-  if (!co) return { error: "Code d'invitation inconnu." };
-  const emp = await db.prepare("SELECT id,enc FROM employees WHERE company_id=? AND user_id IS NULL").all(co.id) as { id: number; enc: string }[];
-  const match = emp.find((x) => decrypt<Emp>(x.enc).name.toLowerCase() === s(f, "name").toLowerCase());
-  if (!match) return { error: "Nom non trouvé : demande à ton patron d'ajouter ta fiche." };
   if (!/^\S+@\S+\.\S+$/.test(email) || pw.length < 8) return { error: "Email valide et mot de passe de 8 caractères minimum." };
   if (await db.prepare("SELECT 1 FROM users WHERE email=?").get(email)) return { error: "Email déjà utilisé." };
+  const personal = (await db.prepare("SELECT id,company_id,employee_id,user_id FROM roster WHERE invite_code=?").get(code)) as { id: number; company_id: number; employee_id: number | null; user_id: number | null } | undefined;
+  if (personal) {
+    if (personal.user_id) return { error: "Cette invitation a déjà été utilisée. Demande un nouveau code à ton patron." };
+    const r = await db.prepare("INSERT INTO users(email,hash,role,company_id,consent_cgv,created) VALUES(?,?,'salarie',?,1,?)").run(email, hashPassword(pw), personal.company_id, now());
+    const uid = Number(r.lastInsertRowid);
+    await db.prepare("UPDATE roster SET user_id=? WHERE id=?").run(uid, personal.id);
+    if (personal.employee_id) await db.prepare("UPDATE employees SET user_id=? WHERE id=? AND company_id=? AND user_id IS NULL").run(uid, personal.employee_id, personal.company_id);
+    await startSession(uid);
+    redirect("/salarie");
+  }
+  const co = await db.prepare("SELECT id FROM companies WHERE invite_code=?").get(code) as { id: number } | undefined;
+  if (!co) return { error: "Code d'invitation inconnu." };
+  const name = s(f, "name");
+  if (!name) return { error: "Indique ton nom, comme sur la fiche préparée par ton patron." };
+  const emp = await db.prepare("SELECT id,enc FROM employees WHERE company_id=? AND user_id IS NULL").all(co.id) as { id: number; enc: string }[];
+  const match = emp.find((x) => decrypt<Emp>(x.enc).name.toLowerCase() === name.toLowerCase());
+  if (!match) return { error: "Nom non trouvé : demande à ton patron d'ajouter ta fiche." };
   const r = await db.prepare("INSERT INTO users(email,hash,role,company_id,consent_cgv,created) VALUES(?,?,'salarie',?,1,?)").run(email, hashPassword(pw), co.id, now());
   await db.prepare("UPDATE employees SET user_id=? WHERE id=?").run(Number(r.lastInsertRowid), match.id);
   await startSession(Number(r.lastInsertRowid));
@@ -132,7 +228,6 @@ export async function joinCompany(_: unknown, f: FormData) {
 }
 
 export async function punch(f: FormData) {
-  if (!extras) return;
   const u = await currentUser();
   if (!u || u.role !== "salarie" || !u.company_id) redirect("/connexion");
   const kind = s(f, "kind");
@@ -232,6 +327,7 @@ export async function deleteEmployee(f: FormData) {
     await t.prepare("DELETE FROM documents WHERE employee_id=? AND company_id=?").run(eid, u.company_id);
     await t.prepare("DELETE FROM deadlines WHERE employee_id=? AND company_id=?").run(eid, u.company_id);
     await t.prepare("DELETE FROM punches WHERE employee_id=? AND company_id=?").run(eid, u.company_id);
+    await t.prepare("UPDATE roster SET employee_id=NULL, user_id=NULL WHERE company_id=? AND (employee_id=? OR user_id=?)").run(u.company_id, eid, emp.user_id);
     await t.prepare("DELETE FROM employees WHERE id=? AND company_id=?").run(eid, u.company_id);
     if (emp.user_id) await t.prepare("DELETE FROM users WHERE id=? AND role='salarie'").run(emp.user_id);
     await t.prepare("INSERT INTO journal(company_id,at,actor,action,doc_id,version) VALUES(?,?,?,?,NULL,NULL)").run(u.company_id, now(), u.email, "Fiche salarié supprimée à la demande (données effacées)");
@@ -246,7 +342,7 @@ export async function deleteAccount(_: unknown, f: FormData) {
   if (s(f, "confirm") !== "SUPPRIMER") return { error: "Écris SUPPRIMER en majuscules pour confirmer." };
   const c = u.company_id;
   await db.tx(async (t) => {
-    for (const table of ["punches", "push_subs", "notifications", "deadlines", "journal", "documents", "employees", "company_media"])
+    for (const table of ["staff_messages", "directives", "roster", "punches", "push_subs", "notifications", "deadlines", "journal", "documents", "employees", "company_media"])
       await t.prepare(`DELETE FROM ${table} WHERE company_id=?`).run(c);
     await t.prepare("DELETE FROM purchases WHERE user_id IN (SELECT id FROM users WHERE company_id=?)").run(c);
     await t.prepare("DELETE FROM users WHERE company_id=? OR id=?").run(c, u.id);

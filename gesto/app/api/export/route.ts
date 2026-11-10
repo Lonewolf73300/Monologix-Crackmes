@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
 import { db, decrypt, logError } from "@/lib/db";
 import type { Emp } from "@/lib/documents";
+import type { RosterInput } from "@/lib/roster";
 
 // Export RGPD : toutes les données du commerce, en clair, au format JSON (patron uniquement).
 export async function GET() {
@@ -22,6 +23,9 @@ export async function GET() {
       journal: await q("SELECT at,actor,action,doc_id,version FROM journal WHERE company_id=? ORDER BY id"),
       rappels_envoyes: await q("SELECT at,subject,status FROM notifications WHERE company_id=? ORDER BY id"),
       pointages: await q("SELECT employee_id,at,kind FROM punches WHERE company_id=? ORDER BY id"),
+      equipe: ((await q("SELECT id,enc,user_id,employee_id,created FROM roster WHERE company_id=? ORDER BY id")) as { id: number; enc: string; user_id: number | null; employee_id: number | null; created: string }[]).map((r) => ({ id: r.id, created: r.created, user_id: r.user_id, employee_id: r.employee_id, ...decrypt<RosterInput>(r.enc) })),
+      consignes: await q("SELECT id,body,created FROM directives WHERE company_id=? ORDER BY id"),
+      retours: await q("SELECT kind,body,author,created,directive_id FROM staff_messages WHERE company_id=? ORDER BY id"),
     };
     return new NextResponse(JSON.stringify(data, null, 2), { headers: { "Content-Type": "application/json; charset=utf-8", "Content-Disposition": `attachment; filename="gesto-export-${new Date().toISOString().slice(0, 10)}.json"` } });
   } catch (e) { logError("export", e); return new NextResponse("Export impossible, réessaie.", { status: 500 }); }

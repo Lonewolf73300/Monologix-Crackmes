@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { extras } from "@/lib/flags";
 import { Form, Field } from "../ui";
 import { signup } from "../actions";
 export default function Page() {
@@ -14,7 +13,7 @@ export default function Page() {
         <label className="flex items-start gap-3 text-sm text-zinc-300"><input type="checkbox" name="cgv" className="mt-0.5 h-4 w-4 shrink-0 accent-[#1f9d4c]" /><span>J&apos;accepte les <Link href="/mentions-legales" className="underline">conditions d&apos;utilisation</Link> (textes définitifs en cours de relecture juridique).</span></label>
         <label className="flex items-start gap-3 text-sm text-zinc-400"><input type="checkbox" name="stats" className="mt-0.5 h-4 w-4 shrink-0 accent-[#1f9d4c]" /><span>J&apos;accepte que mes réponses servent à des statistiques anonymisées (facultatif). Aucune donnée personnelle n&apos;est transmise à des sponsors.</span></label>
       </Form></div>
-      <p className="mt-6 text-sm text-zinc-400">Déjà un compte ? <Link href="/connexion" className="underline">Me connecter</Link>{extras && <> · Salarié ? <Link href="/rejoindre" className="underline">Rejoindre mon employeur</Link></>}</p>
+      <p className="mt-6 text-sm text-zinc-400">Déjà un compte ? <Link href="/connexion" className="underline">Me connecter</Link> · Équipe ? <Link href="/rejoindre" className="underline">Rejoindre mon restaurant</Link></p>
       </div>
     </main>
   );
