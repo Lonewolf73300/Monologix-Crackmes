@@ -13,7 +13,7 @@ Aucun salarié n'est créé tout seul. La liste vient de toi.
 
 Ouvre `/le-chamois` dans l'application. Le bandeau dit **Mode démo locale**.
 
-- Le seul compte déjà là est le patron de démonstration : `lou@chamois.demo` / `demo-lou`. Aucun salarié n'est inventé.
+- Le seul compte déjà là est le patron de démonstration : `lou@chamois.demo` / `demo-lou`. Aucun salarié réel n'est connecté. En développement seulement, `GESTO_DEMO=1` avec `next dev` affiche « Entrer comme le loup, chef de rang ». C'est Lou qui regarde cet écran. Le bouton disparaît si `NODE_ENV` vaut `production`. Ne jamais poser `GESTO_DEMO` sur Vercel. Aucun message n'est envoyé.
 - Le patron invite par un lien (rôle Manager ou Salarié), envoie une consigne (priorité, date facultative, tout le monde, un rôle ou une personne) et voit qui a lu.
 - La personne ouvre le lien dans le même navigateur, choisit un mot de passe, lit, répond, marque fait, ou envoie un rapport.
 - Le patron désactive un compte. Un compte désactivé ne rentre plus.

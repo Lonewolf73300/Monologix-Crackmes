@@ -29,6 +29,9 @@ export type Directive = {
   due: string | null;
   audience: Audience;
   createdAt: string;
+  /** Affichage seulement. Aucune règle n'est exécutée. */
+  kind?: "recurrent" | "meteo" | "planning";
+  test?: boolean;
 };
 
 export type ReadMark = { directiveId: string; accountId: string; at: string };

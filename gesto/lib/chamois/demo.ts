@@ -30,6 +30,53 @@ export function ensureDb() {
   return loadDb();
 }
 
+/** Persona de test : Lou regarde l'écran chef de rang. Pas un salarié réel, aucun envoi. */
+export const DEMO_LOUP_ID = "demo-loup";
+
+const DEMO_RULES: { id: string; kind: "recurrent" | "meteo" | "planning"; body: string }[] = [
+  { id: "demo-dj", kind: "recurrent", body: "DJ Matafan tous les vendredis. Tenue : chemise à carreaux." },
+  { id: "demo-accord", kind: "recurrent", body: "Lionel Tuez à l'accordéon tous les mercredis. Tenue : chemise à carreaux." },
+  { id: "demo-neige", kind: "meteo", body: "S'il neige, plier la terrasse." },
+  { id: "demo-fermeture", kind: "planning", body: "Celui qui ferme avec Lou arrive plus tard le lendemain." },
+  { id: "demo-menage", kind: "planning", body: "Le chef de rang qui arrive le plus tôt fait le ménage avec le runner." },
+];
+
+export function enterDemoLoup() {
+  const db = ensureDb();
+  db.accounts = db.accounts.filter((a) => a.id !== "demo-chloe" && a.email !== "chloe.dete@chamois.demo");
+  if (!db.accounts.some((a) => a.id === DEMO_LOUP_ID)) {
+    db.accounts.push({
+      id: DEMO_LOUP_ID,
+      restaurantId: db.restaurant.id,
+      firstName: "le loup",
+      lastName: "",
+      email: "le.loup@chamois.demo",
+      role: "salarie",
+      password: "demo-loup",
+      active: true,
+      inviteToken: null,
+    });
+  }
+  const authorId = db.accounts.find((a) => a.role === "patron")?.id ?? "lou";
+  DEMO_RULES.forEach((rule, i) => {
+    if (db.directives.some((d) => d.id === rule.id)) return;
+    db.directives.push({
+      id: rule.id,
+      restaurantId: db.restaurant.id,
+      authorId,
+      body: rule.body,
+      priority: "normale",
+      due: null,
+      audience: { type: "role", role: "salarie" },
+      createdAt: new Date(Date.UTC(2026, 10, 10, 12, DEMO_RULES.length - i)).toISOString(),
+      kind: rule.kind,
+      test: true,
+    });
+  });
+  saveDb(db);
+  setSession(DEMO_LOUP_ID);
+}
+
 export function resetDemo() {
   localStorage.removeItem(DB_KEY);
   sessionStorage.removeItem(SESSION_KEY);

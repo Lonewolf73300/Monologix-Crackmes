@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CIBLES, EQUIPE_HIVER_2026, nomAffiche, pourvus } from "@/lib/chamois/equipe-hiver";
 import { audienceLabel, canSend, fullName, incoming, inbox, PRIORITY_LABEL, readBy, ROLE_LABEL, sent, targets, type Account, type Audience, type Db, type Priority } from "@/lib/chamois/logic";
-import { acceptInvite, ensureDb, invite, loadDb, login, markRead, onDemoChange, postDirective, postNote, resetDemo, sessionId, setActive, setManagersMaySend, setNoteStatus, setSession } from "@/lib/chamois/demo";
+import { acceptInvite, ensureDb, enterDemoLoup, invite, loadDb, login, markRead, onDemoChange, postDirective, postNote, resetDemo, sessionId, setActive, setManagersMaySend, setNoteStatus, setSession } from "@/lib/chamois/demo";
 
 const field = "mt-1 w-full rounded-xl border border-line bg-white px-3 py-3 text-base outline-none focus:border-accent";
 
-export default function Boite({ supabaseConfigured = false }: { supabaseConfigured?: boolean }) {
+export default function Boite({ supabaseConfigured = false, demoTest = false }: { supabaseConfigured?: boolean; demoTest?: boolean }) {
   const params = useSearchParams();
   const token = params.get("invitation");
   const [db, setDb] = useState<Db | null>(null);
@@ -39,7 +39,7 @@ export default function Boite({ supabaseConfigured = false }: { supabaseConfigur
         <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Aucun e-mail n&apos;est envoyé : il n&apos;y a pas de fournisseur. Les mots de passe de cette démo restent dans ce navigateur, en clair. N&apos;y inscris pas de vraies personnes.{supabaseConfigured ? " Des clés Supabase sont présentes, mais cet écran n'est pas encore relié à Auth : rien n'est enregistré dans la base." : ""}</p>
         {error && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {!me && invited && <Accept db={db} account={invited} token={token!} onError={setError} onDone={refresh} />}
-        {!me && !invited && <Login onError={setError} onDone={refresh} />}
+        {!me && !invited && <Login demoTest={demoTest} onError={setError} onDone={refresh} />}
         {me?.role === "patron" && <Patron db={db} me={me} tab={tab} setTab={setTab} onError={setError} refresh={refresh} />}
         {me?.role === "manager" && <Staff db={db} me={me} tab={tab} setTab={setTab} openId={openId} setOpenId={setOpenId} onError={setError} refresh={refresh} />}
         {me?.role === "salarie" && <Staff db={db} me={me} tab={tab} setTab={setTab} openId={openId} setOpenId={setOpenId} onError={setError} refresh={refresh} />}
@@ -48,7 +48,7 @@ export default function Boite({ supabaseConfigured = false }: { supabaseConfigur
   );
 }
 
-function Login({ onError, onDone }: { onError: (s: string) => void; onDone: () => void }) {
+function Login({ demoTest, onError, onDone }: { demoTest: boolean; onError: (s: string) => void; onDone: () => void }) {
   return (
     <form className="card mt-4 p-4" onSubmit={(e) => {
       e.preventDefault();
@@ -62,6 +62,8 @@ function Login({ onError, onDone }: { onError: (s: string) => void; onDone: () =
       <label className="mt-3 block text-sm font-medium">Mot de passe<input name="password" type="password" required autoComplete="current-password" className={field} /></label>
       <button className="btn-primary mt-4 w-full py-3">Entrer</button>
       <p className="mt-3 text-sm text-zinc-500">Patron de démonstration, déjà créé : <b>lou@chamois.demo</b> / <b>demo-lou</b>. Aucun salarié n&apos;est préenregistré.</p>
+      {demoTest && <button type="button" className="btn-ghost mt-3 w-full py-3" onClick={() => { enterDemoLoup(); onError(""); onDone(); }}>Entrer comme le loup, chef de rang (test local uniquement)</button>}
+      {demoTest && <p className="mt-2 text-xs text-zinc-500">Ce bouton n&apos;existe qu&apos;en développement avec GESTO_DEMO=1. « le loup » est Lou qui regarde l&apos;écran d&apos;un chef de rang. Aucun salarié réel n&apos;est connecté. Aucun message n&apos;est envoyé.</p>}
       <button type="button" className="mt-3 text-sm underline" onClick={() => { resetDemo(); onDone(); }}>Effacer la démo de ce navigateur</button>
     </form>
   );
@@ -217,16 +219,24 @@ function Inbox({ db, me, refresh }: { db: Db; me: Account; refresh: () => void }
   );
 }
 
+function RuleTag({ kind }: { kind?: "recurrent" | "meteo" | "planning" }) {
+  if (kind === "recurrent") return <p className="mt-1 text-xs font-semibold text-blue-800">Événement récurrent. Texte seulement : pas au calendrier, et ça ne se répète pas tout seul.</p>;
+  if (kind === "meteo") return <p className="mt-1 text-xs font-semibold text-sky-800">Règle météo. Texte seulement : aucune météo n&apos;est consultée, la terrasse n&apos;est pas pliée automatiquement.</p>;
+  if (kind === "planning") return <p className="mt-1 text-xs font-semibold text-amber-900">Règle de planning. Texte seulement : aucun horaire n&apos;est décalé et aucune tâche n&apos;est attribuée.</p>;
+  return null;
+}
+
 function Staff({ db, me, tab, setTab, openId, setOpenId, onError, refresh }: { db: Db; me: Account; tab: string; setTab: (s: string) => void; openId: string | null; setOpenId: (s: string | null) => void; onError: (s: string) => void; refresh: () => void }) {
   const items = incoming(db, me);
   const tabs: [string, string][] = me.role === "manager" ? [["boite", "Boîte"], ["consignes", "Consignes"], ["signaler", "Signaler"]] : [["consignes", "Consignes"], ["signaler", "Signaler"]];
   const current = tabs.some(([id]) => id === tab) ? tab : tabs[0][0];
   return (
     <div>
-      <p className="mt-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Vue {ROLE_LABEL[me.role]}</p>
+      <p className="mt-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Vue {ROLE_LABEL[me.role]}{me.id === "demo-loup" ? " · chef de rang · test" : ""}</p>
       <Tabs items={tabs} tab={current} setTab={setTab} />
       {current === "boite" && <Inbox db={db} me={me} refresh={refresh} />}
       {current === "consignes" && <div className="mt-4 space-y-3">
+        {items.some((d) => d.test) && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">Données de test. Rien n&apos;a été envoyé à l&apos;équipe. Les règles météo et de planning sont du texte : Gesto ne les applique pas.</p>}
         {!items.length && <p className="card p-4 text-sm">Aucune consigne pour toi.</p>}
         {items.map((d) => {
           const open = openId === d.id;
@@ -234,6 +244,7 @@ function Staff({ db, me, tab, setTab, openId, setOpenId, onError, refresh }: { d
             <article key={d.id} className="card p-4">
               <button className="w-full text-left" onClick={() => { setOpenId(d.id); markRead(me.id, d.id); refresh(); }}>
                 <p className="text-xs font-bold uppercase text-zinc-500">{PRIORITY_LABEL[d.priority]}{d.due ? ` · avant le ${d.due}` : ""} · {readBy(db, d, me.id) ? "Lu" : "Pas lu"}</p>
+                <RuleTag kind={d.kind} />
                 <p className="mt-1 font-semibold">{d.body}</p>
               </button>
               {open && <form className="mt-3" onSubmit={(e) => {
