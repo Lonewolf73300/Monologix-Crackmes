@@ -48,7 +48,7 @@ export function parseRosterCsv(text: string): { rows: RosterInput[]; errors: str
     };
     const where = `Ligne ${n + 2}`;
     const statut = iStatut >= 0 ? norm(cols[iStatut] ?? "") : "";
-    if (["non confirme", "ne pas inviter", "optionnel", "optionnel manager"].includes(statut)) {
+    if (["non confirme", "ne pas inviter", "optionnel", "optionnel manager", "en attente", "pending"].includes(statut)) {
       errors.push(`${where} : ${row.firstName} ${row.lastName} n'est pas à inviter (${cols[iStatut]}).`);
       return;
     }

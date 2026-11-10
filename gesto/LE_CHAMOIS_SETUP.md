@@ -157,7 +157,31 @@ Prévus, embauche ou retour :
 | Gianni | Drago | chef de rang | confirmé, embauché |
 | David | Remy | chef de cuisine | promesse d'embauche du 16 septembre 2026 |
 
-Seize personnes prévues. Aucune invitation tant que Lou n'a pas remplacé `email_in_thread`.
+Seize personnes embauchées. Aucune invitation tant que Lou n'a pas remplacé `email_in_thread`.
+
+En attente, détails à confirmer. Pas d'invitation non plus :
+
+| Comment on les note | Poste | Ce qui manque |
+| --- | --- | --- |
+| Fabrice | guide motoneige | le nom. Probablement Dufresne, non confirmé |
+| Frère de Lou | poste à confirmer | le prénom, le nom et le poste |
+| Titi | poste à confirmer | l'identité. Ce n'est qu'un surnom |
+
+Ça fait dix-neuf personnes sur la liste. Le bar et le snack ne sont pas dans les cibles ci-dessous.
+
+Cibles salle et cuisine, comptées seulement sur les embauches :
+
+| Poste | Cible | Pourvus | Manque |
+| --- | --- | --- | --- |
+| Chefs de rang | 4 | 3 (Chloé Dété, Sébastien Papot, Gianni Drago) | 1 |
+| Runners | 2 | 1 (Andrea Favarel) | 1 |
+| Chef de cuisine | 1 | 1 (David Remy) | 0 |
+| Second | 1 | 1 (Matéo Levasseur) | 0 |
+| Chef de partie froid | 1 | 1 (Clément Favarel) | 0 |
+| Commis | 1 | 1 (Lucas Dos Santos Albuquerque) | 0 |
+| Plongeur | 1 | 1 (Kevin Biribo) | 0 |
+| Pizzaïolo | 1 | 1 (Mickaël Manfredi) | 0 |
+| Crêpier | 1 | 1 (Jérémie Pothin) | 0 |
 
 Pas d'invitation automatique :
 

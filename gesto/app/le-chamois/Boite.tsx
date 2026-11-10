@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { EQUIPE_HIVER_2026 } from "@/lib/chamois/equipe-hiver";
+import { CIBLES, EQUIPE_HIVER_2026, nomAffiche, pourvus } from "@/lib/chamois/equipe-hiver";
 import { audienceLabel, canSend, fullName, incoming, inbox, PRIORITY_LABEL, readBy, ROLE_LABEL, sent, targets, type Account, type Audience, type Db, type Priority } from "@/lib/chamois/logic";
 import { acceptInvite, ensureDb, invite, loadDb, login, markRead, onDemoChange, postDirective, postNote, resetDemo, sessionId, setActive, setManagersMaySend, setNoteStatus, setSession } from "@/lib/chamois/demo";
 
@@ -130,11 +130,16 @@ function Patron({ db, me, tab, setTab, onError, refresh }: { db: Db; me: Account
           {!people.length && <li className="text-sm text-zinc-500">Aucun compte créé. La liste ci-dessous n&apos;est pas invitée.</li>}</ul>
         <section className="card p-4">
           <h2 className="font-bold">Hiver 2026/27</h2>
-          <p className="mt-1 text-sm text-zinc-500">Noms et postes seulement. Pas d&apos;email, pas de téléphone, pas de compte. On attend Lou avant toute invitation. John Adrait et Maurice (Momo) Adrait ne sont pas dans l&apos;équipe.</p>
+          <p className="mt-1 text-sm text-zinc-500">Dix-neuf personnes. Pas d&apos;email, pas de téléphone, pas de compte. On attend Lou avant toute invitation. John Adrait et Maurice (Momo) Adrait ne sont pas dans l&apos;équipe.</p>
+          <ul className="mt-3 space-y-1 text-sm">{CIBLES.map((c) => {
+            const n = pourvus(c.roles).length;
+            return <li key={c.poste}><b>{c.groupe} · {c.poste}</b> {n}/{c.cible}{n < c.cible ? ` · il manque ${c.cible - n}` : ""}</li>;
+          })}</ul>
+          <p className="mt-2 text-xs text-zinc-500">Le bar et le snack sont en dehors de ces cibles.</p>
           <ul className="mt-3 space-y-2 text-sm">{EQUIPE_HIVER_2026.map((p) => (
-            <li key={`${p.firstName}-${p.lastName}`} className="flex items-baseline justify-between gap-3">
-              <span><b>{p.firstName} {p.lastName}</b> · {p.role}{p.note ? ` · ${p.note}` : ""}</span>
-              <span className="shrink-0 text-xs font-semibold uppercase text-zinc-500">{p.statut === "embauche" ? "prévu" : p.statut === "non_confirme" ? "non confirmé" : "pas invité"}</span>
+            <li key={nomAffiche(p)} className="flex items-baseline justify-between gap-3">
+              <span><b>{nomAffiche(p)}</b> · {p.role}{p.note ? ` · ${p.note}` : ""}</span>
+              <span className="shrink-0 text-xs font-semibold uppercase text-zinc-500">{p.statut === "embauche" ? "prévu" : p.statut === "en_attente" ? "en attente" : p.statut === "non_confirme" ? "non confirmé" : "pas invité"}</span>
             </li>
           ))}</ul>
         </section>
