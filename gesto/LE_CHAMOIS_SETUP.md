@@ -155,8 +155,9 @@ Prévus, embauche ou retour :
 | Chloé | Dété | chef de rang | retour |
 | Sébastien | Papot | chef de rang | |
 | Gianni | Drago | chef de rang | confirmé, embauché |
+| David | Remy | chef de cuisine | promesse d'embauche du 16 septembre 2026 |
 
-Quinze personnes prévues. Aucune invitation tant que Lou n'a pas remplacé `email_in_thread`.
+Seize personnes prévues. Aucune invitation tant que Lou n'a pas remplacé `email_in_thread`.
 
 Pas d'invitation automatique :
 

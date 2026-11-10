@@ -1,5 +1,5 @@
 // Liste hiver 2026/27 transmise par Lou. Aucun email ni téléphone : il les confirmera.
-// Quinze personnes embauchées, dont Gianni Drago. James est un manager possible, pas un poste.
+// Seize personnes embauchées, dont Gianni Drago et David Remy. James est un manager possible, pas un poste.
 // John Adrait et Maurice (Momo) Adrait ne font pas partie de cette liste.
 
 export type EquipierPrevu = {
@@ -26,5 +26,6 @@ export const EQUIPE_HIVER_2026: EquipierPrevu[] = [
   { firstName: "Chloé", lastName: "Dété", role: "chef de rang", statut: "embauche", note: "retour" },
   { firstName: "Sébastien", lastName: "Papot", role: "chef de rang", statut: "embauche" },
   { firstName: "Gianni", lastName: "Drago", role: "chef de rang", statut: "embauche", note: "confirmé" },
+  { firstName: "David", lastName: "Remy", role: "chef de cuisine", statut: "embauche", note: "promesse d'embauche du 16 septembre 2026" },
   { firstName: "James", lastName: "Adrait", role: "manager optionnel", statut: "optionnel", note: "ne pas inviter" },
 ];
