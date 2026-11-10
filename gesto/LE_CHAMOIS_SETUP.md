@@ -154,10 +154,12 @@ Prévus, embauche ou retour :
 | Matéo | Levasseur | second de cuisine | retour |
 | Chloé | Dété | chef de rang | retour |
 | Sébastien | Papot | chef de rang | |
+| Gianni | Drago | chef de rang | confirmé, embauché |
+
+Quinze personnes prévues. Aucune invitation tant que Lou n'a pas remplacé `email_in_thread`.
 
 Pas d'invitation automatique :
 
-- Gianni Drago, chef de rang : non confirmé.
 - James Adrait : propriétaire, manager possible seulement si Lou le confirme.
 
 Ne pas traiter comme salariés actuels : John Adrait, Maurice (Momo) Adrait.
