@@ -6,8 +6,27 @@ Deux choses coexistent dans le dépôt :
 
 - `gesto-management/` : le pilote public (pages statiques, données dans le navigateur). Il sert à montrer le produit. **N'y mets pas la vraie équipe.**
 - `gesto/` : l'outil du restaurant. Comptes séparés, base Postgres (Supabase), fiches, brouillons de contrat, échéances, consignes. C'est celui-ci que Lou et l'équipe utilisent.
+- `gesto/employe-dist/` : l'essai téléphone, une page statique. Pas de serveur, pas de Supabase. Le compte reste dans le téléphone.
 
 Aucun salarié n'est créé tout seul. La liste vient de toi.
+
+## Essai téléphone, sur ta machine
+
+Depuis le dossier `gesto` :
+
+```bash
+python3 -m http.server 3244
+```
+
+Ouvre `http://localhost:3244/employe-dist/`. Un fichier ouvert en `file://` ne charge pas `data.json`.
+
+- Première ouverture : nom, email ou téléphone, poste. Le texte dit que le compte est sur ce téléphone et que Lou ne reçoit pas l'inscription. Si le nom est exactement celui d'une ligne embauchée, l'horaire de cette personne s'affiche. Sinon, pas d'horaire personnel.
+- `?test=1&role=chef_de_rang` ouvre le poste chef de rang en hiver sans créer de compte.
+- Le mode patron demande le champ `patronPin` de `data.json`. C'est une protection faible : le fichier est lisible. Ensuite : réunion vers la salle, la cuisine, les deux, ou une personne, et « tester comme » (le loup, le pélo, Lou patron, Lou manager salle).
+- Les manques, la carte et les réunions modifiés restent sur ce téléphone. L'écran le dit. Rien n'est envoyé.
+- Aurélien Musiani et Léo Lourenco apparaissent sur les postes ouverts. Ils ne comptent pas comme des embauches.
+
+Pour le remplacer plus tard par Supabase, `storage.js` expose `load()` et `save()`. Il n'y a pas d'appel réseau.
 
 ## Boîte d'équipe, tout de suite, sans Supabase
 
@@ -165,7 +184,7 @@ En attente, détails à confirmer. Pas d'invitation non plus :
 | --- | --- | --- |
 | Fabrice | guide motoneige | le nom. Probablement Dufresne, non confirmé |
 | Frère de Lou | poste à confirmer | le prénom, le nom et le poste |
-| Titi | poste à confirmer | l'identité. Ce n'est qu'un surnom |
+| Titi | poste à confirmer | l'identité. Surnom seulement. Lou parle de Sébastien Thilliez : les deux lignes restent séparées |
 
 Ça fait dix-neuf personnes sur la liste. Le bar et le snack ne sont pas dans les cibles ci-dessous.
 
@@ -173,8 +192,8 @@ Cibles salle et cuisine, comptées seulement sur les embauches :
 
 | Poste | Cible | Pourvus | Manque |
 | --- | --- | --- | --- |
-| Chefs de rang | 4 | 3 (Chloé Dété, Sébastien Papot, Gianni Drago) | 1 |
-| Runners | 2 | 1 (Andrea Favarel) | 1 |
+| Chefs de rang | 4 | 3 (Chloé Dété, Sébastien Papot, Gianni Drago) | 1 · Aurélien Musiani, recommandé, non confirmé, pas une embauche |
+| Runners | 2 | 1 (Andrea Favarel) | 1 · Léo Lourenco, à confirmer, pas une embauche |
 | Chef de cuisine | 1 | 1 (David Remy) | 0 |
 | Second | 1 | 1 (Matéo Levasseur) | 0 |
 | Chef de partie froid | 1 | 1 (Clément Favarel) | 0 |

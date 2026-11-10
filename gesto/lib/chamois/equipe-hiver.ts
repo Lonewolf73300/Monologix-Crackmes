@@ -31,7 +31,7 @@ export const EQUIPE_HIVER_2026: EquipierPrevu[] = [
   { firstName: "David", lastName: "Remy", role: "chef de cuisine", statut: "embauche", note: "promesse d'embauche du 16 septembre 2026" },
   { firstName: "Fabrice", lastName: "", role: "guide motoneige", statut: "en_attente", note: "nom probablement Dufresne, non confirmé" },
   { firstName: "", lastName: "", role: "poste à confirmer", statut: "en_attente", label: "Frère de Lou", note: "prénom, nom et poste non confirmés" },
-  { firstName: "Titi", lastName: "", role: "poste à confirmer", statut: "en_attente", note: "surnom seulement, identité et poste à confirmer" },
+  { firstName: "Titi", lastName: "", role: "poste à confirmer", statut: "en_attente", note: "surnom seulement. Lou parle de Sébastien Thilliez : lignes non fusionnées" },
   { firstName: "James", lastName: "Adrait", role: "manager optionnel", statut: "optionnel", note: "ne pas inviter" },
 ];
 
