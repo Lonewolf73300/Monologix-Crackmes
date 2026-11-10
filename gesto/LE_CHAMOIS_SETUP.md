@@ -9,6 +9,29 @@ Deux choses coexistent dans le dépôt :
 
 Aucun salarié n'est créé tout seul. La liste vient de toi.
 
+## Boîte d'équipe, tout de suite, sans Supabase
+
+Ouvre `/le-chamois` dans l'application. Le bandeau dit **Mode démo locale**.
+
+- Le seul compte déjà là est le patron de démonstration : `lou@chamois.demo` / `demo-lou`. Aucun salarié n'est inventé.
+- Le patron invite par un lien (rôle Manager ou Salarié), envoie une consigne (priorité, date facultative, tout le monde, un rôle ou une personne) et voit qui a lu.
+- La personne ouvre le lien dans le même navigateur, choisit un mot de passe, lit, répond, marque fait, ou envoie un rapport.
+- Le patron désactive un compte. Un compte désactivé ne rentre plus.
+- Les managers n'envoient des consignes que si le patron coche l'autorisation.
+- **Aucun e-mail n'est envoyé.** Il n'y a pas de fournisseur. Le temps réel entre deux téléphones n'existe pas dans cette démo : tout reste dans ce navigateur. Le bouton « Effacer la démo » vide ces données.
+- N'y mets pas de vraies personnes. Les mots de passe y sont en clair. Pas de salaire, pas de santé, pas de pièce d'identité dans cette boîte.
+
+Pour de vrais comptes, suis la suite et lance aussi `gesto/supabase/migrations/002_chamois_comms.sql`. Ça crée les tables `chamois_*` avec les droits par restaurant (RLS). Renseigne alors, en Preview seulement :
+
+```text
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=la clé anon, jamais la service_role
+```
+
+L'écran `/le-chamois` reste en démo locale tant que ces variables ne sont pas là : on ne simule pas une base distante. Les e-mails d'invitation ne partiront qu'après avoir réglé le SMTP dans Supabase Auth (Authentication → Emails). Sans ce réglage, même en production, il faudra transmettre le lien à la main. Le temps réel Supabase n'est pas activé dans le SQL : ne le promets pas à l'équipe.
+
+Avant d'y mettre l'équipe réelle, Lou doit : informer les personnes (finalité, durée, droits d'accès et d'effacement), signer les conditions Supabase, et vérifier qu'aucune donnée sensible n'est demandée. L'identité de l'éditeur (SIREN, adresse) n'est toujours pas renseignée.
+
 ## 1. Créer le projet Supabase
 
 1. Va sur https://supabase.com et crée un projet. Région conseillée : **Europe (eu-west)**.

@@ -199,6 +199,7 @@ export default async function Page() {
             <div className="mt-4 flex flex-col gap-2">
               <Link href="/salaries" className="btn-primary">Ajouter ou inviter l&apos;équipe</Link>
               <Link href="/consignes" className="btn-ghost">Lire les retours</Link>
+              <Link href="/le-chamois" className="btn-ghost">Boîte Patron, Manager, Salarié</Link>
               <Link href="/cours/chapitre-1" className="text-sm font-medium text-zinc-500 underline">Chapitre 1 gratuit, à part</Link>
             </div>
           </section>
