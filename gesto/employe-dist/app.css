@@ -1,0 +1,59 @@
+:root {
+  --bg: #07090d;
+  --card: #121722;
+  --line: #2a3548;
+  --text: #e8eef8;
+  --muted: #93a0b5;
+  --gold: #e4b15a;
+  --cyan: #8ee0d0;
+  --danger: #ff8b7a;
+  --ok: #5ddeaf;
+  --blue: #9ec1ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #05070b; color: var(--text); font: 16px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+body { min-height: 100dvh; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+#app { width: min(480px, 100%); min-height: 100dvh; margin: 0 auto; background: var(--bg); position: relative; }
+.top { position: sticky; top: 0; z-index: 5; background: #0c1118ee; backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 10px 14px 12px; }
+.test { display: inline-block; background: var(--gold); color: #1a1204; font-size: 11px; font-weight: 800; letter-spacing: .14em; border-radius: 999px; padding: 3px 8px; }
+.top h1 { margin: 6px 0 0; font-size: 20px; letter-spacing: -.03em; }
+.who { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.local { margin: 10px 14px 0; color: var(--gold); font-size: 12px; }
+main { padding: 8px 14px 108px; }
+.nav { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: min(480px, 100%); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; background: #0c1118f2; border-top: 1px solid var(--line); padding: 6px 4px calc(8px + env(safe-area-inset-bottom)); }
+.nav button { background: transparent; border: 0; color: var(--muted); min-height: 52px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; }
+.nav button.on { color: var(--gold); background: #1c2433; }
+.nav svg { width: 20px; height: 20px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-top: 10px; }
+.card h2 { margin: 0 0 8px; font-size: 16px; }
+.muted { color: var(--muted); font-size: 13px; }
+.row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; padding: 8px 0; border-top: 1px solid #243044; }
+.row:first-of-type { border-top: 0; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 999px; padding: 3px 8px; }
+.tag.rec { color: #07121c; background: var(--blue); }
+.tag.met { color: #041410; background: var(--cyan); }
+.tag.plan { color: #1a1204; background: var(--gold); }
+.tag.wait { color: var(--gold); border: 1px solid var(--gold); }
+.alert { border-color: #6d4b22; background: #24190d; }
+.okbox { border-color: #1e4a3a; }
+label { display: block; font-size: 13px; color: var(--muted); margin-top: 10px; }
+input, select, textarea { width: 100%; margin-top: 4px; background: #0c1118; border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+textarea { min-height: 76px; resize: vertical; }
+.btn { width: 100%; margin-top: 12px; min-height: 48px; border-radius: 12px; border: 0; background: var(--gold); color: #1a1204; font-weight: 750; }
+.btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.btn.small { width: auto; min-height: 40px; padding: 0 12px; margin-top: 0; }
+.days { display: flex; gap: 6px; overflow: auto; padding-bottom: 4px; }
+.days button { min-width: 52px; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: #0c1118; color: var(--muted); }
+.days button.on { border-color: var(--gold); color: var(--gold); }
+.check { display: flex; gap: 10px; align-items: center; }
+.check input { width: 22px; height: 22px; margin: 0; }
+.done { opacity: .55; text-decoration: line-through; }
+.switch { display: flex; gap: 6px; }
+.switch button { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: #0c1118; }
+.switch button.on { border-color: var(--cyan); color: var(--cyan); }
+.q { white-space: pre-wrap; }
+.persona { width: 100%; margin-top: 8px; }
+svg { display: block; }
