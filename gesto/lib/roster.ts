@@ -12,6 +12,7 @@ function contactOf(email: string, phone: string, contact: string): string {
 export function contactError(contact: string): string | null {
   const v = contact.trim();
   if (!v) return "Indique un email ou un téléphone.";
+  if (v.toLowerCase() === "email_in_thread") return "Email pas encore confirmé (email_in_thread). Lou doit le remplacer avant toute invitation.";
   if (v.includes("@")) return /^\S+@\S+\.\S+$/.test(v) ? null : "Email invalide.";
   if (v.replace(/\D/g, "").length < 8) return "Téléphone trop court, ou email invalide.";
   return null;
@@ -30,6 +31,7 @@ export function parseRosterCsv(text: string): { rows: RosterInput[]; errors: str
   const iEmail = at("email", "e mail", "mail", "courriel");
   const iPhone = at("telephone", "tel", "phone", "mobile");
   const iContact = at("contact", "email ou telephone", "email or phone");
+  const iStatut = at("statut", "status", "inviter");
   if (iFirst < 0 || iLast < 0 || iRole < 0 || (iEmail < 0 && iPhone < 0 && iContact < 0)) {
     return { rows: [], errors: ["En-têtes attendus : prenom, nom, role, et une colonne email ou telephone."] };
   }
@@ -45,6 +47,11 @@ export function parseRosterCsv(text: string): { rows: RosterInput[]; errors: str
       contact: contactOf(iEmail >= 0 ? cols[iEmail] ?? "" : "", iPhone >= 0 ? cols[iPhone] ?? "" : "", iContact >= 0 ? cols[iContact] ?? "" : "").slice(0, 80),
     };
     const where = `Ligne ${n + 2}`;
+    const statut = iStatut >= 0 ? norm(cols[iStatut] ?? "") : "";
+    if (["non confirme", "ne pas inviter", "optionnel", "optionnel manager"].includes(statut)) {
+      errors.push(`${where} : ${row.firstName} ${row.lastName} n'est pas à inviter (${cols[iStatut]}).`);
+      return;
+    }
     if (!row.firstName || !row.lastName || !row.role) { errors.push(`${where} : prénom, nom et rôle sont obligatoires.`); return; }
     const bad = contactError(row.contact);
     if (bad) { errors.push(`${where} : ${bad}`); return; }

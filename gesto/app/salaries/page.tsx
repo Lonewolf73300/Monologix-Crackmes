@@ -77,7 +77,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
           </div>
           <div>
             <h3 className="font-bold">Importer un CSV</h3>
-            <p className="mt-1 text-sm text-zinc-500">En-têtes : prenom, nom, role, et email ou telephone. Virgule ou point-virgule. 200 lignes maximum.</p>
+            <p className="mt-1 text-sm text-zinc-500">En-têtes : prenom, nom, role, et email ou telephone. Le modèle hiver 2026/27 est <span className="font-mono">templates/le-chamois-hiver-2026-27.csv</span>. Tant que l&apos;email vaut email_in_thread, ou que le statut est non_confirme ou optionnel, la ligne est refusée.</p>
             <Form action={importRoster} submit="Importer le CSV">
               <label className="block text-sm font-medium text-zinc-300">Coller le fichier<textarea name="csv" required rows={6} placeholder={"prenom;nom;role;telephone"} className="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 font-mono text-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent/10" /></label>
             </Form>

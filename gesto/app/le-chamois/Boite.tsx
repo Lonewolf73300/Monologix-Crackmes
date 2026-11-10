@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { EQUIPE_HIVER_2026 } from "@/lib/chamois/equipe-hiver";
 import { audienceLabel, canSend, fullName, incoming, inbox, PRIORITY_LABEL, readBy, ROLE_LABEL, sent, targets, type Account, type Audience, type Db, type Priority } from "@/lib/chamois/logic";
 import { acceptInvite, ensureDb, invite, loadDb, login, markRead, onDemoChange, postDirective, postNote, resetDemo, sessionId, setActive, setManagersMaySend, setNoteStatus, setSession } from "@/lib/chamois/demo";
 
@@ -126,7 +127,17 @@ function Patron({ db, me, tab, setTab, onError, refresh }: { db: Db; me: Account
             </li>
           );
         })}
-          {!people.length && <li className="text-sm text-zinc-500">Personne à inviter pour l&apos;instant. L&apos;équipe réelle n&apos;est pas préremplie.</li>}</ul>
+          {!people.length && <li className="text-sm text-zinc-500">Aucun compte créé. La liste ci-dessous n&apos;est pas invitée.</li>}</ul>
+        <section className="card p-4">
+          <h2 className="font-bold">Hiver 2026/27</h2>
+          <p className="mt-1 text-sm text-zinc-500">Noms et postes seulement. Pas d&apos;email, pas de téléphone, pas de compte. On attend Lou avant toute invitation. John Adrait et Maurice (Momo) Adrait ne sont pas dans l&apos;équipe.</p>
+          <ul className="mt-3 space-y-2 text-sm">{EQUIPE_HIVER_2026.map((p) => (
+            <li key={`${p.firstName}-${p.lastName}`} className="flex items-baseline justify-between gap-3">
+              <span><b>{p.firstName} {p.lastName}</b> · {p.role}{p.note ? ` · ${p.note}` : ""}</span>
+              <span className="shrink-0 text-xs font-semibold uppercase text-zinc-500">{p.statut === "embauche" ? "prévu" : p.statut === "non_confirme" ? "non confirmé" : "pas invité"}</span>
+            </li>
+          ))}</ul>
+        </section>
       </section>}
       {tab === "consigne" && <Composer db={db} me={me} onError={onError} refresh={refresh} />}
       {tab === "boite" && <Inbox db={db} me={me} refresh={refresh} />}

@@ -130,28 +130,39 @@ Relancer le script ne duplique pas le restaurant et ne change pas le mot de pass
 
 Autre chemin, sans script : ouvre la preview, va sur `/inscription`, crée le compte avec le prénom Lou, puis réponds au diagnostic en nommant le commerce **Le Chamois**.
 
-## 6. Ajouter et inviter l'équipe
+## 6. Équipe hiver 2026/27, sans invitation pour l'instant
 
-1. Connecte-toi en patron. Ouvre **Équipe**.
-2. La liste est vide. Ajoute une personne (prénom, nom, rôle, email ou téléphone) ou colle un CSV.
+La seule liste à utiliser est `gesto/templates/le-chamois-hiver-2026-27.csv`. Elle ne contient aucun email ni aucun téléphone réels : la colonne email vaut `email_in_thread`, le téléphone est vide. **Ne l'importe pas et n'envoie aucune invitation tant que Lou n'a pas confirmé les contacts.** L'import refuse `email_in_thread`, ainsi que les statuts `non_confirme` et `optionnel`.
 
-En-têtes acceptés, virgule ou point-virgule :
+Lou Adrait est le responsable, vue Patron. Ce n'est pas une ligne du CSV.
 
-```text
-prenom;nom;role;telephone
-```
+Prévus, embauche ou retour :
 
-ou `email` à la place de `telephone`. Une ligne d'exemple, à effacer avant d'importer les vraies personnes :
+| Prénom | Nom | Poste | Note |
+| --- | --- | --- | --- |
+| Lola | Hamon | barmaid | |
+| Gabin | Heine | limonadier | |
+| Andrea | Favarel | runneuse / serveuse | nom complet indiqué : Andrea Macarena Olortegui Ramirez |
+| Clément | Favarel | chef de partie froid | |
+| Loreleï | Volt | polyvalente | |
+| Axel | Sbrizzi | snackeur | |
+| Sébastien | Thilliez | snackeur | |
+| Kevin | Biribo | plongeur | retour |
+| Jérémie | Pothin | crêpier | retour |
+| Mickaël | Manfredi | pizzaiolo | retour |
+| Lucas | Dos Santos Albuquerque | commis de cuisine | |
+| Matéo | Levasseur | second de cuisine | retour |
+| Chloé | Dété | chef de rang | retour |
+| Sébastien | Papot | chef de rang | |
 
-```text
-prenom;nom;role;telephone
-EXEMPLE;A_EFFACER;serveur;0600000000
-```
+Pas d'invitation automatique :
 
-3. Chaque personne reçoit un **code personnel**. Gesto n'envoie aucun e-mail ni SMS : tu transmets le code toi-même (papier, message que tu envoies de ton côté).
-4. La personne ouvre `/rejoindre` sur son téléphone, entre le code, choisit son email de connexion et un mot de passe.
-5. Elle voit les consignes, peut répondre et envoyer un rapport. Le pointage n'apparaît qu'après **Compléter la fiche** (dates, heures, salaire). Ne remplis pas une fiche avec un salaire inventé.
-6. Le code du restaurant (affiché en haut de la page Équipe) sert seulement si la fiche existe déjà : la personne doit alors retaper son nom tel qu'il est écrit sur la fiche.
+- Gianni Drago, chef de rang : non confirmé.
+- James Adrait : propriétaire, manager possible seulement si Lou le confirme.
+
+Ne pas traiter comme salariés actuels : John Adrait, Maurice (Momo) Adrait.
+
+Quand Lou aura donné un email ou un téléphone pour une personne déjà confirmée, remplace `email_in_thread` sur sa ligne, laisse le statut `embauche`, puis seulement là colle le CSV dans **Équipe**. Chaque personne reçoit un code personnel. Gesto n'envoie aucun e-mail ni SMS : tu transmets le code toi-même. La personne ouvre `/rejoindre`, choisit son mot de passe, et voit les consignes. Le pointage n'apparaît qu'après **Compléter la fiche**. Ne remplis pas une fiche avec un salaire inventé.
 
 ## 7. Consignes, brouillons, échéances
 
