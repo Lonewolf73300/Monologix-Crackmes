@@ -8,8 +8,9 @@ import { logout } from "./actions";
 const MAIN: { href: string; label: string; short: string; icon: IconName }[] = [
   { href: "/tableau-de-bord", label: "Accueil", short: "Accueil", icon: "home" },
   { href: "/salaries", label: "Mon équipe", short: "Équipe", icon: "users" },
-  { href: "/documents", label: "Documents", short: "Documents", icon: "file" },
-  { href: "/echeances", label: "Échéances", short: "Échéances", icon: "calendar" },
+  { href: "/consignes", label: "Consignes", short: "Consignes", icon: "clipboard" },
+  { href: "/documents", label: "Documents", short: "Docs", icon: "file" },
+  { href: "/echeances", label: "Échéances", short: "Dates", icon: "calendar" },
 ];
 const SIDE = [...MAIN, { href: "/parametres", label: "Paramètres", short: "Paramètres", icon: "settings" as IconName }];
 
@@ -32,9 +33,9 @@ export default function Nav({ company, type, banner }: { company: string; type: 
         </div>
       </aside>
       {/* Maquette 1 : barre d'onglets, pastille active */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 gap-2 rounded-t-[28px] border-t border-line bg-white/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur lg:hidden">{MAIN.map((i) => (
+      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 gap-1 rounded-t-[28px] border-t border-line bg-white/95 px-2 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 shadow-[0_-10px_30px_rgba(16,24,40,.08)] backdrop-blur lg:hidden">{MAIN.map((i) => (
         <Link key={i.href} href={i.href} aria-current={on(i.href) ? "page" : undefined}
-          className={`flex flex-col items-center gap-1 rounded-2xl py-2 text-[13px] ${on(i.href) ? "bg-blue-50 font-semibold text-blue-600" : "text-zinc-500"}`}>
+          className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[11px] ${on(i.href) ? "bg-blue-50 font-semibold text-blue-600" : "text-zinc-500"}`}>
           <Icon name={i.icon} className="h-6 w-6" filled={on(i.href) && i.icon === "home"} />{i.short}</Link>))}</nav>
     </>
   );

@@ -4,6 +4,7 @@ import { db, decrypt } from "@/lib/db";
 import { pushConfigured } from "@/lib/push";
 import { mediaUrls } from "@/lib/media";
 import { KIND_LABEL, missingInfo, type Emp, type Kind } from "@/lib/documents";
+import { priorities } from "@/lib/rules";
 import { toggleDeadline, validateDoc } from "../actions";
 import { Avatar, Logo } from "../brand";
 import { Banner } from "../banner";
@@ -18,7 +19,8 @@ const joinFr = (a: string[]) => (a.length > 1 ? `${a.slice(0, -1).join(", ")} et
 
 export default async function Page() {
   const u = await requirePatron();
-  const co = (await db.prepare("SELECT name FROM companies WHERE id=?").get(u.company_id)) as { name: string };
+  const co = (await db.prepare("SELECT name,type,nb_sal,season,pains,objective FROM companies WHERE id=?").get(u.company_id)) as { name: string; type: string; nb_sal: string; season: string; pains: string; objective: string };
+  const prios = priorities({ type: co.type || "", nb_sal: co.nb_sal || "", season: co.season || "", pains: JSON.parse(co.pains || "[]"), objective: co.objective || "" });
   const media = await mediaUrls(u.company_id);
   const n = async (sql: string, ...p: unknown[]) => ((await db.prepare(sql).get(u.company_id, ...p)) as { n: number }).n;
   const today = new Date().toISOString().slice(0, 10);
@@ -118,6 +120,11 @@ export default async function Page() {
 
       <div className="mt-5 grid grid-cols-1 gap-5 px-4 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-10">
         <div className="min-w-0 space-y-5">
+          <section className="card p-5">
+            <h2 className="text-lg font-bold">Tes 3 priorités</h2>
+            <p className="mt-1 text-sm text-zinc-500">Calculées à partir de tes réponses, toujours les mêmes pour les mêmes réponses.</p>
+            <ol data-priorities className="mt-3 list-decimal space-y-2 pl-5 text-[15px]">{prios.map((p) => <li key={p}>{p}</li>)}</ol>
+          </section>
           {/* Maquette 3 — chiffres */}
           <div className="hidden grid-cols-3 gap-4 lg:grid">
             {([["users", `${emps}`, emps > 1 ? "Salariés" : "Salarié", newEmps], ["calendar", `${open}`, open > 1 ? "Échéances" : "Échéance", 0], ["checkCircle", `${toReview}`, "À relire", 0]] as const).map(([ic, v, l, badge]) => (
@@ -186,15 +193,13 @@ export default async function Page() {
 
         {/* Maquette 3 — panneau sombre or (Mon cours) */}
         <aside>
-          <section className="relative overflow-hidden rounded-[22px] bg-gradient-to-b from-[#1b2130] to-[#11151d] p-7 text-white shadow-lift lg:sticky lg:top-6">
-            <Banner src={media.banniere} className="absolute inset-x-0 bottom-0 h-56 w-full opacity-50" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#1b2130] via-[#1b2130]/90 to-transparent" />
-            <div className="relative">
-              <div className="flex items-start gap-3"><Icon name="crown" className="mt-1 h-8 w-8 text-gold" /><p className="text-[26px] font-bold leading-tight">Mon cours Gesto<br /><span className="text-gold">Chapitre 1</span></p></div>
-              <ul className="mt-6 space-y-3.5 text-[17px] text-white/90">
-                {["La DPAE avant l'arrivée", "Le contrat écrit", "Horaires et registre", "Mutuelle et médecine du travail", "Gratuit, sans carte"].map((x) => <li key={x} className="flex items-center gap-3"><Icon name="check" className="h-5 w-5 text-gold" />{x}</li>)}
-              </ul>
-              <Link href="/cours/chapitre-1" className="btn-gold mt-8 w-full py-4 text-[17px]">Lire le chapitre <Icon name="arrowRight" className="h-5 w-5" /></Link>
+          <section className="card p-6 lg:sticky lg:top-6">
+            <h2 className="text-xl font-bold">Le restaurant d&apos;abord</h2>
+            <p className="mt-2 text-sm text-zinc-500">Les prix et le paiement ne sont pas sur cet écran. Ici : l&apos;équipe, les consignes, les brouillons.</p>
+            <div className="mt-4 flex flex-col gap-2">
+              <Link href="/salaries" className="btn-primary">Ajouter ou inviter l&apos;équipe</Link>
+              <Link href="/consignes" className="btn-ghost">Lire les retours</Link>
+              <Link href="/cours/chapitre-1" className="text-sm font-medium text-zinc-500 underline">Chapitre 1 gratuit, à part</Link>
             </div>
           </section>
         </aside>

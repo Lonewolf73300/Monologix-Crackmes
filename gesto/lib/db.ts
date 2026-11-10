@@ -23,6 +23,12 @@ CREATE INDEX IF NOT EXISTS idx_documents_company ON documents(company_id);
 CREATE INDEX IF NOT EXISTS idx_deadlines_company ON deadlines(company_id, done, due);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name TEXT;
 CREATE TABLE IF NOT EXISTS company_media(company_id INTEGER NOT NULL, kind TEXT NOT NULL, mime TEXT NOT NULL, data BYTEA NOT NULL, updated TEXT NOT NULL, PRIMARY KEY(company_id, kind));
+CREATE TABLE IF NOT EXISTS roster(id SERIAL PRIMARY KEY, company_id INTEGER NOT NULL, enc TEXT NOT NULL, invite_code TEXT UNIQUE NOT NULL, user_id INTEGER, employee_id INTEGER, created TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS directives(id SERIAL PRIMARY KEY, company_id INTEGER NOT NULL, body TEXT NOT NULL, created TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS staff_messages(id SERIAL PRIMARY KEY, company_id INTEGER NOT NULL, user_id INTEGER NOT NULL, directive_id INTEGER, kind TEXT NOT NULL, body TEXT NOT NULL, author TEXT NOT NULL, created TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_roster_company ON roster(company_id);
+CREATE INDEX IF NOT EXISTS idx_directives_company ON directives(company_id, id DESC);
+CREATE INDEX IF NOT EXISTS idx_staff_messages_company ON staff_messages(company_id, id DESC);
 `;
 
 const g = globalThis as unknown as { __pool?: Pool; __ready?: Promise<void> };

@@ -9,13 +9,13 @@ export default async function Page() {
   const u = await currentUser();
   const configured = !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_PRICE_COURS && !!process.env.STRIPE_PRICE_ABO;
   const offers = [
-    { id: "cours", t: "Apprendre", p: "47 € une fois (puis 97 €)", d: "Le cours complet. Paiement unique, aucun prélèvement ensuite." },
-    { id: "abonnement", t: "Fais-le pour moi", p: "24 € par mois", d: "Prélèvement mensuel, email de rappel avant chaque prélèvement, résiliation en un clic." },
+    { id: "cours", t: "Le cours", p: "47 € paiement unique", d: "Le cours. Paiement unique, aucun prélèvement ensuite." },
+    { id: "abonnement", t: "Fais-le pour moi", p: "24 €/mois", d: "Accompagnement mensuel, quand le paiement sera vraiment ouvert." },
   ];
   return (
     <main className="mx-auto max-w-3xl px-5 pb-10">
       <h1 className="text-3xl font-semibold tracking-tight">Choisir mon offre</h1>
-      {!configured && <p className="mt-4 rounded-lg border border-line bg-panel p-4 text-sm text-zinc-400">Le paiement n&apos;est pas encore ouvert. Tu peux lire le chapitre 1 gratuitement.</p>}
+      {!configured && <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">Paiement non encore activé. Tu peux lire le chapitre 1 gratuitement. Aucun bouton de paiement n&apos;encaisse.</p>}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">{offers.map((o) => (
         <form key={o.id} action="/api/checkout" method="post" className="card p-6">
           <input type="hidden" name="offer" value={o.id} />

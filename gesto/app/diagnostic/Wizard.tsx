@@ -1,7 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { saveDiagnostic } from "../actions";
 import { TYPES, NB, SEASONS, PAINS, OBJECTIVES } from "@/lib/rules";
+
+const KEY = "gesto-diagnostic";
+const TITLES = ["Comment s'appelle ton commerce ?", "Dans quel département ?", "Quel type de commerce ?", "Combien de salariés ?", "Ton activité est…", "Tes douleurs concrètes (plusieurs choix)", "Ton objectif prioritaire"];
 
 const big = "flex w-full items-center justify-between rounded-xl border border-line bg-white px-5 py-4 text-left text-lg font-medium transition hover:border-accent hover:bg-green-50/50";
 const cap = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
@@ -10,11 +13,21 @@ export default function Wizard() {
   const [step, setStep] = useState(0);
   const [d, setD] = useState({ name: "", type: "", dept: "", nb_sal: "", season: "", pains: [] as string[], objective: "" });
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(KEY) || "null") as { step?: number; d?: typeof d } | null;
+      if (saved?.d) setD(saved.d);
+      if (typeof saved?.step === "number") setStep(Math.min(TITLES.length - 1, Math.max(0, saved.step)));
+    } catch { /* réponse illisible : on recommence */ }
+    setReady(true);
+  }, []);
+  useEffect(() => { if (ready) sessionStorage.setItem(KEY, JSON.stringify({ step, d })); }, [ready, step, d]);
   const set = (k: string, v: string) => setD((x) => ({ ...x, [k]: v }));
   const next = () => setStep((s) => s + 1);
   const pick = (k: string, v: string) => { set(k, v); next(); };
   const Opt = ({ k, v }: { k: string; v: string }) => <button type="button" className={big} onClick={() => pick(k, v)}>{cap(v)}<Chev /></button>;
-  const titles = ["Comment s'appelle ton commerce ?", "Dans quel département ?", "Quel type de commerce ?", "Combien de salariés ?", "Ton activité est…", "Tes douleurs concrètes (plusieurs choix)", "Ton objectif prioritaire"];
+  const titles = TITLES;
   return (
     <div>
       <div className="flex items-center justify-between"><p className="eyebrow">Question {step + 1} / {titles.length}</p></div>
