@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>Mire LED 192x192</title>
+<style>html,body{margin:0;background:#000;height:100%;overflow:hidden}canvas{display:block;width:100vmin;height:100vmin;image-rendering:pixelated}</style>
+<canvas id=c width=192 height=192></canvas>
+<script>
+// Mire de cadrage 192x192 (ecran easyScreen 410, 1,92 m x 1,92 m). F11 pour plein ecran.
+var c=document.getElementById('c'),x=c.getContext('2d');
+x.fillStyle='#000';x.fillRect(0,0,192,192);
+x.strokeStyle='#0f0';x.lineWidth=1;
+for(var i=0;i<=192;i+=16){x.beginPath();x.moveTo(i+.5,0);x.lineTo(i+.5,192);x.moveTo(0,i+.5);x.lineTo(192,i+.5);x.stroke();}
+x.strokeStyle='#f00';x.strokeRect(.5,.5,191,191);          // bord exterieur = doit etre visible sur les 4 cotes
+x.strokeStyle='#00f';x.strokeRect(8.5,8.5,175,175);
+x.strokeStyle='#ff0';x.beginPath();x.moveTo(0,0);x.lineTo(192,192);x.moveTo(192,0);x.lineTo(0,192);x.stroke();
+x.fillStyle='#fff';x.font='bold 14px monospace';x.textAlign='center';
+x.fillText('HAUT',96,22);x.fillText('BAS',96,186);x.fillText('G',10,100);x.fillText('D',182,100);
+x.fillText('192x192',96,100);
+x.fillStyle='#f0f';x.fillRect(0,0,8,8);x.fillStyle='#0ff';x.fillRect(184,0,8,8);  // coin HG magenta, HD cyan
+</script>
