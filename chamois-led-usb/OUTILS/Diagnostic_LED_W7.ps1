@@ -77,5 +77,9 @@ foreach ($d in ($dirs | Select-Object -Unique)) {
     } catch { Add-Content $errs ('scan ' + $d.FullName + ': ' + $_) }
 }
 
-W ''; W ('FIN. Erreurs eventuelles: ' + $errs)
-Write-Host ('Rapport: ' + $rep)
+W ''; W 'FIN du script.'
+$ok = (Test-Path $rep) -and ((Get-Item $rep).Length -gt 500)
+$nerr = 0; if (Test-Path $errs) { $nerr = @(Get-Content $errs).Count }
+if ($ok -and $nerr -eq 0) { Write-Host ('RAPPORT OK: ' + $rep) }
+elseif ($ok) { Write-Host ('RAPPORT PARTIEL (' + $nerr + ' erreur(s), voir ' + $errs + '): ' + $rep) }
+else { Write-Host 'ECHEC: rapport absent ou vide.' }

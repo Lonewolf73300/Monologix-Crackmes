@@ -10,8 +10,9 @@ for(var i=0;i<=192;i+=16){x.beginPath();x.moveTo(i+.5,0);x.lineTo(i+.5,192);x.mo
 x.strokeStyle='#f00';x.strokeRect(.5,.5,191,191);          // bord exterieur = doit etre visible sur les 4 cotes
 x.strokeStyle='#00f';x.strokeRect(8.5,8.5,175,175);
 x.strokeStyle='#ff0';x.beginPath();x.moveTo(0,0);x.lineTo(192,192);x.moveTo(192,0);x.lineTo(0,192);x.stroke();
-x.fillStyle='#fff';x.font='bold 14px monospace';x.textAlign='center';
-x.fillText('HAUT',96,22);x.fillText('BAS',96,186);x.fillText('G',10,100);x.fillText('D',182,100);
-x.fillText('192x192',96,100);
-x.fillStyle='#f0f';x.fillRect(0,0,8,8);x.fillStyle='#0ff';x.fillRect(184,0,8,8);  // coin HG magenta, HD cyan
+// coins numerotes : 1 rouge HG, 2 vert HD, 3 bleu BG, 4 blanc BD
+var C=[['#f00',0,0,'1'],['#0f0',176,0,'2'],['#00f',0,176,'3'],['#fff',176,176,'4']];
+C.forEach(function(k){x.fillStyle=k[0];x.fillRect(k[1],k[2],16,16);x.fillStyle=(k[0]=='#fff'||k[0]=='#0f0')?'#000':'#fff';x.font='bold 12px monospace';x.textAlign='center';x.fillText(k[3],k[1]+8,k[2]+13);});
+x.strokeStyle='#fff';x.beginPath();x.arc(96,96,80,0,6.2832);x.stroke();
+x.fillStyle='#fff';x.font='bold 14px monospace';x.textAlign='center';x.fillText('192x192',96,100);
 </script>

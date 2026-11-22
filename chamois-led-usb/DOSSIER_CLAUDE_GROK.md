@@ -1,52 +1,49 @@
-# Dossier de transmission — écran LED Le Chamois (Eurodisplay)
+# Reprise — écran géant Eurodisplay du Chamois (dossier au 22/11/2026)
 
-> Faits = vus sur photos/documents par l'utilisateur. À vérifier = pas encore testé sur la Dell.
+Destiné à Claude, Grok ou un technicien. **Essais sur la Dell et sur la façade : NON réalisés.** Les pièces jointes (photos, V7, anciens packs) ne sont pas dans ce dépôt ; seul le pack V1-corrigé de ce dossier l'est.
 
-## Objectif
-Piloter l'écran géant extérieur depuis la **nouvelle tour Dell**, avec bon cadrage et bonne qualité, sans toucher à la programmation des cartes. Idéal : un outil "lancer et ça marche" (lecteur photo/vidéo carré).
+## Demande
+Gérant du Chamois. Écran extérieur déjà alimenté en image, mais mauvais cadrage, qualité décevante, bureau Windows / erreurs de script visibles dehors. Souhait : déposer photo/vidéo, laisser le logiciel préparer une copie adaptée, choisir, lancer. Commandes et autres fenêtres hors de l'image. Installation par clé USB + raccourci. Réglages validés une fois sur la façade puis mémorisés.
 
-## Matériel (faits)
-- Écran : Eurodisplay **easyScreen modèle 410**, 1,92 × 1,92 m, définition **192 × 192 px** (fiche sur photo).
-- Carte d'envoi : **LINSN TS801** (carte verte, puce marquée LXY801A / "LX801A"). Carte de réception séparée : **RV801**. Ne pas confondre : TS801 = envoi, RV801 = réception.
-- Carte rouge : PCI vidéo ancienne génération, **modèle non identifié** (à identifier via rapport PCI).
-- Carte mère : MSI FM2-A55M-E33 (FM2, ancienne plateforme). Connectique : VGA, nappes internes, RJ45.
-- Les cartes rouge et verte sont **installées dans la Dell** (pas à transférer).
-- Câble RJ45 sortant vers l'écran : très probablement liaison LINSN propriétaire, **pas de l'Ethernet classique** — à confirmer.
-- OS de la Dell : apparemment **Windows 7** → PowerShell 2.0 (pas de Get-CimInstance, Get-NetAdapter, Get-NetIPAddress).
+## Faits retenus
+- Écran : Euro Display easyScreen Indoor/Outdoor **410** (EVPTRMD410), 1,92 × 1,92 m, 4 modules 2×2. Fiche : définition graphique **192 × 192** ; mentionne aussi HDV/Quadcore et pitch 10/20 mm → ne pas certifier une matrice physique 192×192 sans contrôle.
+- Carte d'envoi dans la tour : étiquette **TS801** ; puce LXY801A / LINSN / 0912 (référence de puce ≠ carte).
+- **RV801** (+ HUB40A-1, puce LINSN 0828) : photographiée dans une boîte, **installation actuelle non prouvée**.
+- Carte bleue à antenne = **NETGEAR WG311v3** (Wi-Fi PCI) : aucun rôle d'émetteur LED. (Une analyse précédente de la conversation parlait d'une "carte rouge PCI vidéo" : non confirmé.)
+- GPU photographié : ATI Radeon HD4350 ; carte mère FM2-A55M-E33 ; Windows 7 build 7601 — **état de la nouvelle Dell non confirmé** (modèle, GPU, Windows à relever par diagnostic).
+- Docs 2009 : Windows XP Pro, ED Player, Serial Converter, Control Software, carte vidéo USB. Ne pas fusionner avec l'époque Windows 7.
+- Lecteur d'origine : **VisualManager** ; **EasyScreen Manager V9.13** visible aussi (contenu/lecture vs gestion).
+- Le RJ45 de la TS801 transporte le signal LED : **pas un réseau IP**, ne pas y brancher une carte réseau PC. Deux câbles blancs distincts (réseau carte mère / carte d'envoi).
+- Un CD EasyCAP photographié n'est pas un installateur récupéré.
 
-## Docs Eurodisplay 2009 (faits)
-4 modules, pitch 10 mm, 3,69 m², système d'origine PC Windows XP + logiciel Eurodisplay, entrées RGB/S-Video/composite, pilotage DVI plug & play. Le logiciel Eurodisplay a une **zone de capture réglable** : cause probable de "seul un coin du bureau s'affiche". Modèle exact de la carte d'envoi/protocole : non donné par les docs commerciales. À confirmer : la façade installée = 192×192 px.
-Une vidéo HD doit être réduite à 192×192 : la perte de détail est normale, pas un défaut.
+## Symptômes / réglages historiques (à tester, pas à réappliquer)
+Lecteur : X=49 Y=10 L=283 H=205 (IMG_1113) ; X=49 Y=8 L=283 H=209 (IMG_1114) ; default.seq, SpotEuroDisplay, Loop ON. Catalyst : duplication + "Redimensionner en plein écran", 60 Hz, 16 bits. Hypothèse : la fenêtre de lecture n'est pas alignée sur la portion vidéo réellement transmise (clone, mise à l'échelle, décalage). Une image sur la façade ne valide pas modules, couleurs ni mapping.
 
-## Symptôme actuel
-L'écran **affiche une image** mais mal cadrée et de mauvaise qualité. Pas écran noir.
+## Anciens packs
+- V1 : `$PSScriptRoot` (vide sous PS2), Get-CimInstance / Get-NetAdapter / Get-NetIPAddress absents sous Win7 ; le script annonçait un rapport malgré les échecs. `lecteur.html` : JS moderne, inadapté à un vieil IE, ne pilote pas les cartes Linsn.
+- V6 : HTA/JScript + Windows Media Player, compatibilité non vérifiée.
+- Une panne des panneaux n'est **pas** établie par ces erreurs.
 
-## Historique des pannes
-- Ancien diagnostic `Diagnostic_LED.ps1` : `$root` vide (Join-Path/Split-Path), commandes CIM/NetAdapter absentes, `Stop-Transcript` sans transcription. Message "Rapport créé" **trompeur** → ancien rapport invalide.
-- Packs précédents : CHAMOIS_LED_USB_V1.zip, CHAMOIS_LED_REGIE_V6_0_USB.zip (non repris ici).
+## Candidat V7 (hors dépôt)
+Application C++ Win32/GDI+ 32/64 bits, FFmpeg 6.1.6 → AVI/MJPEG 192×192, playlist, fenêtre de sortie positionnable, mire numérotée, essai 30 s + confirmation + profil mémorisé, diagnostic natif. Compilée et testée sous Linux (385 contrôles, filtres, FFmpeg) ; **jamais exécutée sous Windows** (Wine bloqué). Limites : pas de planificateur, pas de texte défilant, pas d'API TS801 certifiée, ne lit/écrit pas la mémoire des cartes, pas de HEIC/AVIF, HDR non validé.
 
-## Contenu de ce dossier
-- `LANCER_DIAGNOSTIC.bat` + `OUTILS/Diagnostic_LED_W7.ps1` : diagnostic **lecture seule**, Win7/PS2.0, rapport dans `RAPPORTS/`. Copie (sans modifier la source) les fichiers de config Linsn/Eurodisplay trouvés.
-- `OUVRIR_MIRE.cmd` → `OUTILS/mire.html` : mire 192×192 (bords rouges, grille 16 px, coins magenta/cyan) pour mesurer le décalage de cadrage.
-- `OUVRIR_LECTEUR.cmd` → `OUTILS/lecteur.html` : lecteur photos/vidéos recadré en carré.
-- **Non testé sur la Dell ni sur l'écran** (aucun accès matériel ici).
+## Contenu de ce dépôt (`chamois-led-usb/`)
+- `LANCER_DIAGNOSTIC.bat` → `OUTILS/Diagnostic_LED_W7.ps1` : lecture seule, PS 2.0, WMI classique, vérifie que le rapport existe avant d'annoncer la réussite, copie (sans modifier la source) les config Linsn/Eurodisplay trouvées.
+- `OUVRIR_MIRE.cmd` → `OUTILS/mire.html` : mire numérotée (1 rouge HG, 2 vert HD, 3 bleu BG, 4 blanc BD, cadre, cercle).
+- `OUVRIR_LECTEUR.cmd` → `OUTILS/lecteur.html` : lecteur HTML carré (navigateur récent requis ; **inadapté à un vieil IE**, à vérifier sur la Dell).
 
-## Règles de sécurité
-Ne supprimer aucun pilote, ne pas reflasher de firmware, ne pas écraser la config de réception LED. Sauvegarder avant toute modification. Ne pas appliquer une résolution à l'aveugle.
+## Procédure sur la Dell
+1. Diagnostic → noter modèle, Windows, architecture, GPU, écrans, entrée DVI réelle vers la TS801.
+2. Relever mode clone/étendu, DPI, résolution du signal.
+3. Mire en plein écran sur la sortie LED : contrôler 4 coins, cadre, cercle, couleurs, ordre des modules dehors.
+4. Régler la zone de capture / position de fenêtre d'après la mire, puis seulement importer photo/vidéo SDR courte.
+5. Si la mire source est correcte mais blocs réordonnés/couleurs fausses : examiner la réception et son fichier de config, pas le lecteur.
 
-## Plan
-1. Lancer le diagnostic sur la Dell, récupérer `RAPPORTS/`.
-2. Identifier la carte rouge, la résolution actuelle de la sortie VGA, le logiciel LED installé.
-3. Afficher la mire en plein écran (F11) sur la sortie vers l'écran : noter ce qui est coupé/décalé.
-4. Régler d'abord la **résolution de sortie du PC** pour égaler la zone d'envoi configurée dans le logiciel LINSN, puis la zone dans le logiciel (jamais la réception).
-4b. Dans le logiciel Eurodisplay, régler la **zone de capture** sur la zone où s'affiche le lecteur carré.
-5. Alternative à étudier : lecteur autonome LINSN (USB/réseau) à la place de la tour — vérifier d'abord que la TS801 est compatible.
+## Alternative à la tour
+Document Linsn : TS801/TS802/DS801/DS802 existent en boîtier indépendant (DVI-D, RJ45, USB de communication, 5 V) — principe valide, pas un branchement improvisé. Il faut toujours une source vidéo ; la liaison USB n'est pas un lecteur de médias. Ne rien acheter sans preuve de compatibilité (modèle, fichier de dalle, mode HDV/Quadcore, carte de réception réelle). Notice TS802 ≠ TS801.
+
+## Sources
+Linsn "Show the Entire Desktop" (en.linsn.com/new/url/e1b0418375efa9a8) ; Linsn Outer Box Specification (cvc.de/de/pdf/linsn%20ts852%20case%20specs%20english.pdf) ; Euro Display 2023 (eurodisplay.com/led-screens-dedicated-proprietary-control-system/) ; Microsoft about_Automatic_Variables ; Linsn LEDStudio Manual V12.65 ; FFmpeg docs. Non relues ici.
 
 ## Mission pour Claude/Grok
-À partir du rapport : (a) identifier la carte rouge et la chaîne vidéo exacte, (b) dire quelle résolution/position afficher, (c) proposer le réglage logiciel minimal, (d) évaluer l'option lecteur autonome.
-
-## Options matériel (avis, pas de décision)
-- **Ne rien acheter à l'aveugle.** Un contrôleur autonome (NovaStar Taurus, Linsn autonome…) n'est pas compatible d'office avec des cartes réceptrices Linsn RV801 : valider modèle exact et câblage avant achat.
-- Option 1 (prioritaire, gratuite) : régler la chaîne existante (mire + zone de capture + lecteur carré).
-- Option 2 : mini-PC moderne + carte d'envoi actuelle, si elle est saine.
-- Option 3 : contrôleur autonome compatible Linsn, une fois les références confirmées.
+Diagnostic hiérarchisé avec preuves (observations / déductions / inconnues) ; vérifier modèle Dell, exécution réelle des exécutables Windows, cadrage, écarts 192×192 / résolution DVI / HDV-Quadcore, références TS801/RV801/LXY801A ; corriger avec essais réels (chemins accentués, fichiers corrompus, portrait/paysage, pixels non carrés, couleurs, écran noir, reprise, profil). Toute modification firmware/pilote/mapping : cause établie + retour arrière. Chaîne sans tour : matériel compatible *vérifié*.
