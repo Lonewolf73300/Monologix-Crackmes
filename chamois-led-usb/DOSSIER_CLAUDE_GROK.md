@@ -14,6 +14,10 @@ Piloter l'écran géant extérieur depuis la **nouvelle tour Dell**, avec bon ca
 - Câble RJ45 sortant vers l'écran : très probablement liaison LINSN propriétaire, **pas de l'Ethernet classique** — à confirmer.
 - OS de la Dell : apparemment **Windows 7** → PowerShell 2.0 (pas de Get-CimInstance, Get-NetAdapter, Get-NetIPAddress).
 
+## Docs Eurodisplay 2009 (faits)
+4 modules, pitch 10 mm, 3,69 m², système d'origine PC Windows XP + logiciel Eurodisplay, entrées RGB/S-Video/composite, pilotage DVI plug & play. Le logiciel Eurodisplay a une **zone de capture réglable** : cause probable de "seul un coin du bureau s'affiche". Modèle exact de la carte d'envoi/protocole : non donné par les docs commerciales. À confirmer : la façade installée = 192×192 px.
+Une vidéo HD doit être réduite à 192×192 : la perte de détail est normale, pas un défaut.
+
 ## Symptôme actuel
 L'écran **affiche une image** mais mal cadrée et de mauvaise qualité. Pas écran noir.
 
@@ -35,7 +39,14 @@ Ne supprimer aucun pilote, ne pas reflasher de firmware, ne pas écraser la conf
 2. Identifier la carte rouge, la résolution actuelle de la sortie VGA, le logiciel LED installé.
 3. Afficher la mire en plein écran (F11) sur la sortie vers l'écran : noter ce qui est coupé/décalé.
 4. Régler d'abord la **résolution de sortie du PC** pour égaler la zone d'envoi configurée dans le logiciel LINSN, puis la zone dans le logiciel (jamais la réception).
+4b. Dans le logiciel Eurodisplay, régler la **zone de capture** sur la zone où s'affiche le lecteur carré.
 5. Alternative à étudier : lecteur autonome LINSN (USB/réseau) à la place de la tour — vérifier d'abord que la TS801 est compatible.
 
 ## Mission pour Claude/Grok
 À partir du rapport : (a) identifier la carte rouge et la chaîne vidéo exacte, (b) dire quelle résolution/position afficher, (c) proposer le réglage logiciel minimal, (d) évaluer l'option lecteur autonome.
+
+## Options matériel (avis, pas de décision)
+- **Ne rien acheter à l'aveugle.** Un contrôleur autonome (NovaStar Taurus, Linsn autonome…) n'est pas compatible d'office avec des cartes réceptrices Linsn RV801 : valider modèle exact et câblage avant achat.
+- Option 1 (prioritaire, gratuite) : régler la chaîne existante (mire + zone de capture + lecteur carré).
+- Option 2 : mini-PC moderne + carte d'envoi actuelle, si elle est saine.
+- Option 3 : contrôleur autonome compatible Linsn, une fois les références confirmées.
