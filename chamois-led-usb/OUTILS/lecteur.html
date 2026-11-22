@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>Lecteur carre LED</title>
+<style>html,body{margin:0;background:#000;height:100%;overflow:hidden;font-family:sans-serif;color:#fff}
+#s{width:100vmin;height:100vmin;margin:0 auto;position:relative;overflow:hidden}
+#s img,#s video{width:100%;height:100%;object-fit:cover}
+#b{position:fixed;top:4px;left:4px;z-index:9}#b.h{display:none}</style>
+<div id=b><input type=file id=f accept="image/*,video/*" multiple> Duree photo (s):<input id=d type=number value=8 min=1 style="width:50px"> <button onclick="b.className='h'">Masquer</button></div>
+<div id=s></div>
+<script>
+// Lecture en boucle, recadrage CARRE centre (object-fit:cover). F11 pour plein ecran. Echap/souris pour re-afficher le menu.
+var L=[],i=0,s=document.getElementById('s'),b=document.getElementById('b');
+document.getElementById('f').onchange=function(e){L=[].slice.call(e.target.files);i=0;next();};
+document.onmousemove=function(){b.className='';};
+function next(){if(!L.length)return;var f=L[i%L.length];i++;var u=URL.createObjectURL(f),e;
+ s.innerHTML='';
+ if(f.type.indexOf('video')==0){e=document.createElement('video');e.src=u;e.autoplay=true;e.muted=true;e.onended=next;e.onerror=next;}
+ else{e=document.createElement('img');e.src=u;setTimeout(next,1000*(+document.getElementById('d').value||8));}
+ s.appendChild(e);}
+</script>
